@@ -24,7 +24,20 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+*.vscode
 MANIFEST
+
+# Personal folders and file to be ignored
+
+*.pdf
+*.png
+*.root
+*.pkl
+flashsim/
+figures/
+files/
+
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
