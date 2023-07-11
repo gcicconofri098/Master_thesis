@@ -1,0 +1,11 @@
+/gpfs/ddn/srm/cms/store/mc/PhaseIITDRSpring19MiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/MINIAODSIM/PU200_castor_106X_upgrade2023_realistic_v3-v2/30000/1055B338-D190-9B4A-A21E-B843653338ED.root  
+/gpfs/ddn/srm/cms/store/mc/PhaseIITDRSpring19MiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/MINIAODSIM/PU200_castor_106X_upgrade2023_realistic_v3-v2/30000/69449BBA-DBC3-5C40-A876-77E40155D0AA.root  
+/gpfs/ddn/srm/cms/store/mc/PhaseIITDRSpring19MiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/MINIAODSIM/PU200_castor_106X_upgrade2023_realistic_v3-v2/30000/F56A1062-F1F5-964C-AE92-1B829DE5BD88.root
+/gpfs/ddn/srm/cms/store/mc/PhaseIITDRSpring19MiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/MINIAODSIM/PU200_castor_106X_upgrade2023_realistic_v3-v2/30000/1DC7B98C-0203-9F48-8ECE-813E1491016C.root  
+/gpfs/ddn/srm/cms/store/mc/PhaseIITDRSpring19MiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/MINIAODSIM/PU200_castor_106X_upgrade2023_realistic_v3-v2/30000/98794CC0-82CB-6441-9F2D-29B8682935E8.root  
+/gpfs/ddn/srm/cms/store/mc/PhaseIITDRSpring19MiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/MINIAODSIM/PU200_castor_106X_upgrade2023_realistic_v3-v2/30000/F73A0D3B-B337-F347-9CE1-1389658ED9BF.root
+/gpfs/ddn/srm/cms/store/mc/PhaseIITDRSpring19MiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/MINIAODSIM/PU200_castor_106X_upgrade2023_realistic_v3-v2/30000/403AAA04-4654-5A45-A631-25769A57D687.root  
+/gpfs/ddn/srm/cms/store/mc/PhaseIITDRSpring19MiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/MINIAODSIM/PU200_castor_106X_upgrade2023_realistic_v3-v2/30000/C6A9BA3F-A6CA-CF45-8540-7E377A43799C.root
+/gpfs/ddn/srm/cms/store/mc/PhaseIITDRSpring19MiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/MINIAODSIM/PU200_castor_106X_upgrade2023_realistic_v3-v2/30000/593DA1B4-5B62-5040-8E58-C259FB0D34EF.root  
+/gpfs/ddn/srm/cms/store/mc/PhaseIITDRSpring19MiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/MINIAODSIM/PU200_castor_106X_upgrade2023_realistic_v3-v2/30000/D1185F2F-FA0F-F24F-93D6-A06873E0D7CB.root
+/gpfs/ddn/srm/cms/store/mc/PhaseIITDRSpring19MiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/MINIAODSIM/PU200_castor_106X_upgrade2023_realistic_v3-v2/60000/CFD31224-725E-0045-9C74-E71C76647A7D.root

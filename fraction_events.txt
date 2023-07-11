@@ -1,0 +1,199 @@
+events in dataset QCD1: 79857456
+total 79857456
+post preselection background (non cumulative) for QCD1: 0
+total post selection 0
+fraction of QCD1 that passes selection: 0.0
+
+
+events in dataset QCD2: 61542214
+total 141399670
+post preselection background (non cumulative) for QCD2: 0
+total post selection 0
+fraction of QCD2 that passes selection: 0.0
+events in dataset QCD3: 56214199
+
+
+total 197613869
+post preselection background (non cumulative) for QCD3: 6
+total post selection 6
+fraction of QCD3 that passes selection: 1.0673459920686586e-07
+
+
+events in dataset QCD4: 61097673
+total 258711542
+post preselection background (non cumulative) for QCD4: 10029
+total post selection 10035
+fraction of QCD4 that passes selection: 0.00016414700442028292
+
+
+events in dataset QCD5: 47314826
+total 306026368
+post preselection background (non cumulative) for QCD5: 85814
+total post selection 95849
+fraction of QCD5 that passes selection: 0.0018136809802491928
+
+
+events in dataset QCD6: 15230975
+total 321257343
+post preselection background (non cumulative) for QCD6: 54988
+total post selection 150837
+fraction of QCD6 that passes selection: 0.003610274457150642
+
+
+events in dataset QCD7: 11887406
+total 333144749
+post preselection background (non cumulative) for QCD7: 52968
+total post selection 203805
+fraction of QCD7 that passes selection: 0.004455808104812774
+
+
+events in dataset QCD8: 5710430
+total 338855179
+post preselection background (non cumulative) for QCD8: 24260
+total post selection 228065
+fraction of QCD8 that passes selection: 0.004248366585353467
+
+
+events in dataset WJets1: 9335298
+total 348190477
+post preselection background (non cumulative) for WJets1: 0
+total post selection 228065
+fraction of WJets1 that passes selection: 0.0
+
+
+events in dataset WJets2: 13633226
+total 361823703
+post preselection background (non cumulative) for WJets2: 0
+total post selection 228065
+fraction of WJets2 that passes selection: 0.0
+
+
+events in dataset WJets3: 13581343
+total 375405046
+post preselection background (non cumulative) for WJets3: 0
+total post selection 228065
+fraction of WJets3 that passes selection: 0.0
+
+
+events in dataset ZJets1: 13930474
+total 389335520
+post preselection background (non cumulative) for ZJets1: 0
+total post selection 228065
+fraction of ZJets1 that passes selection: 0.0
+
+
+events in dataset ZJets2: 12029507
+total 401365027
+post preselection background (non cumulative) for ZJets2: 0
+total post selection 228065
+fraction of ZJets2 that passes selection: 0.0
+
+
+events in dataset ZJets3: 9681521
+total 411046548
+post preselection background (non cumulative) for ZJets3: 0
+total post selection 228065
+fraction of ZJets3 that passes selection: 0.0
+
+
+events in dataset TTHad: 334206000
+total 745252548
+post preselection background (non cumulative) for TTHad: 40
+total post selection 228105
+fraction of TTHad that passes selection: 1.1968666032327366e-07
+
+
+events in dataset TTSemilept: 476408000
+total 1221660548
+post preselection background (non cumulative) for TTSemilept: 8
+total post selection 228113
+fraction of TTSemilept that passes selection: 1.679232926399221e-08
+
+
+events in dataset ST_tw_antitop: 7749000
+total 1229409548
+post preselection background (non cumulative) for ST_tw_antitop: 0
+total post selection 228113
+fraction of ST_tw_antitop that passes selection: 0.0
+
+
+events in dataset ST_tw_top: 7956000
+total 1237365548
+post preselection background (non cumulative) for ST_tw_top: 0
+total post selection 228113
+fraction of ST_tw_top that passes selection: 0.0
+
+
+events in dataset GGH: 14250000
+total 1251615548
+post preselection background (non cumulative) for GGH: 2
+total post selection 228115
+fraction of GGH that passes selection: 1.4035087719298247e-07
+
+
+events in dataset VBFH: 7598000
+total 1259213548
+post preselection background (non cumulative) for VBFH: 0
+total post selection 228115
+fraction of VBFH that passes selection: 0.0
+
+
+events in dataset ttH: 9668000
+total 1268881548
+post preselection background (non cumulative) for ttH: 92
+total post selection 228207
+fraction of ttH that passes selection: 9.515928837401739e-06
+
+
+events in dataset WMinusH: 9995915
+total 1278877463
+post preselection background (non cumulative) for WMinusH: 0
+total post selection 228207
+fraction of WMinusH that passes selection: 0.0
+
+
+events in dataset WPlusH: 9513933
+total 1288391396
+post preselection background (non cumulative) for WPlusH: 1
+total post selection 228208
+fraction of WPlusH that passes selection: 1.0510900171359206e-07
+
+
+events in dataset ZH: 9989262
+total 1298380658
+post preselection background (non cumulative) for ZH: 35
+total post selection 228243
+fraction of ZH that passes selection: 3.503762340000693e-06
+
+
+events in dataset ggZH: 4928000
+total 1303308658
+post preselection background (non cumulative) for ggZH: 21
+total post selection 228264
+fraction of ggZH that passes selection: 4.2613636363636365e-06
+
+
+events in dataset WW: 15679000
+total 1318987658
+post preselection background (non cumulative) for WW: 0
+total post selection 228264
+fraction of WW that passes selection: 0.0
+
+
+events in dataset WZ: 7940000
+total 1326927658
+post preselection background (non cumulative) for WZ: 0
+total post selection 228264
+fraction of WZ that passes selection: 0.0
+
+
+events in dataset ZZ: 3526000
+total 1330453658
+post preselection background (non cumulative) for ZZ: 0
+total post selection 228264
+fraction of ZZ that passes selection: 0.0
+
+
+events in dataset signal: 540000
+post preselection signal:  0.5985094049999999
+Finished selection
