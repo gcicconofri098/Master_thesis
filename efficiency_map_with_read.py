@@ -9,7 +9,7 @@ module_path = os.path.join(os.path.dirname(__file__), "utils.h")
 
 ROOT.gInterpreter.ProcessLine(f'#include "{module_path}"')
 
-getcontext().prec = 2
+getcontext().prec = 3
 
 entries1 = {}
 
@@ -55,7 +55,7 @@ weights = {
 }
 
 
-histo_file = ROOT.TFile.Open("histograms_from_analysis_2d_discriminator_softdrop_cut_20.root", "READ")
+histo_file = ROOT.TFile.Open("histograms_flashshim_QCD_and_signal.root", "READ")
 
 h2_2["signal"] = histo_file.Get("h2_2_signal")
 
@@ -67,13 +67,13 @@ processes = list(h2_2.keys())
 for i in processes:
 #     #* the value to normalize at the same integrated luminosity of the AN is 2.27
 
-    h2_2[i].Scale(weights[i])
+    h2_2[i].Scale(weights[i]*2.27)
 
 print(h2_2['signal'].GetEntries())
 
 
 
-preselection_signal = 2.523539655
+preselection_signal = 10.000867406513017*2.27
 print(preselection_signal)
 
 hist_2 = h2_2['signal'].Clone()
@@ -92,6 +92,8 @@ for binx in reversed(range(1, 21)):
                 temp = Decimal(new_bin_cont)
                 print(temp)
                 hist_2.SetBinContent(binx, biny, temp)
+            else:
+                hist_2.SetBinContent(binx, biny, 0)
 
 c1 = ROOT.TCanvas("c1", "plot", 4500, 3500)
 c1.SetGrid()
@@ -103,11 +105,11 @@ c2 = ROOT.TCanvas("c2", "Efficiency plot", 4500, 3500)
 c2.SetGrid()
 hist_2.Draw("text COLZ")
 
-c1.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/analysis/figures/signal_2d_mass_window.pdf")
+c1.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/flashsim_signal_2d_discr_mass_window.pdf")
 
 
-c2.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/analysis/figures/efficiency_map_num_mass_window.pdf")
+c2.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/flashsim_efficiency_map_num.pdf")
 
-output_file = ROOT.TFile.Open("efficiency_map_histo.root", "RECREATE")
+# output_file = ROOT.TFile.Open("efficiency_map_histo.root", "RECREATE")
 
-output_file.WriteObject(hist_2, "efficiency")
+# output_file.WriteObject(hist_2, "efficiency")

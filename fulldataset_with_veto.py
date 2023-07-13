@@ -91,11 +91,11 @@ files = {
     "WW": "/scratchnvme/cicco/WW/",
     "WZ": "/scratchnvme/cicco/WZ/",
     "ZZ": "/scratchnvme/cicco/ZZ/",
-    "signal": "/scratchnvme/cicco/signal_RunIISummer20UL16_flash/",
+    "signal": "/scratchnvme/cicco/signal_RunIISummer20UL16/",
 }
 
 #processes = list(files.keys())
-processes = ['QCD6', 'QCD7' , 'QCD8', 'signal']
+processes = ['signal']
 
 for i in processes:
     f = os.listdir(files.get(i))
@@ -115,6 +115,8 @@ print(processes)
 
 new_weights = {}
 
+weighted_post_selection = 0
+
 total_events = 0
 
 total_events_post = 0
@@ -127,6 +129,7 @@ for i in processes:
         total_events = total_events + dataset_events[i]
         print("total",total_events)
     new_weights[i] = weights[i] / dataset_events[i]
+    print("preselection events in dataset {}: {}".format(i, dataset_events[i]*new_weights[i]))
     #print(new_weights[i])
 
     df[i] = df[i].Filter("nFatJet>=2")
@@ -141,11 +144,11 @@ for i in processes:
             "FatJet_pt > 300 && abs(FatJet_eta) < 2.4 && fatjet_lepton_isolation(FatJet_eta, FatJet_phi, Electron_pt, Electron_eta, Electron_phi, Electron_pfRelIso03_all, 11)  && fatjet_lepton_isolation(FatJet_eta, FatJet_phi, Muon_pt, Muon_eta, Muon_phi, Muon_pfRelIso03_all, 13)",
         )
         .Define("Softdrop_sel_jets", "FatJet_msoftdrop[FatJet_Selection]")
-        # .Define("Discriminator_Xbb", "FatJet_particleNetMD_Xbb[FatJet_Selection]")
-        # .Define("Discriminator_Xcc", "FatJet_particleNetMD_Xcc[FatJet_Selection]")
-        # .Define("Discriminator_Xqq", "FatJet_particleNetMD_Xqq[FatJet_Selection]")
-        # .Define("new_discriminator", "Discriminator_Xbb/(1-Discriminator_Xcc - Discriminator_Xqq)")
-        .Define("new_discriminator", "FatJet_particleNetMD_XbbvsQCD[FatJet_Selection]")
+        .Define("Discriminator_Xbb", "FatJet_particleNetMD_Xbb[FatJet_Selection]")
+        .Define("Discriminator_Xcc", "FatJet_particleNetMD_Xcc[FatJet_Selection]")
+        .Define("Discriminator_Xqq", "FatJet_particleNetMD_Xqq[FatJet_Selection]")
+        .Define("new_discriminator", "Discriminator_Xbb/(1-Discriminator_Xcc - Discriminator_Xqq)")
+        #.Define("new_discriminator", "FatJet_particleNetMD_XbbvsQCD[FatJet_Selection]")
         .Define("Eta_sel_jets", "FatJet_eta[FatJet_Selection]")
         .Define("Phi_sel_jets", "FatJet_phi[FatJet_Selection]")
         .Define("Pt_sel_jets", "FatJet_pt[FatJet_Selection]")
@@ -187,7 +190,8 @@ for i in processes:
 
     )
 
-    df[i] = df[i].Filter("new_discriminator[Jet1_index]>0.86").Filter("MET_pt <100")
+    df[i] = df[i].Filter("new_discriminator[Jet1_index]>0.86")
+    df[i] = df[i].Filter("MET_pt <100")
 
     # if str(i) == "WJets1":
     #     col_to_save = {
@@ -293,8 +297,10 @@ for i in processes:
     #     print("pre preselection signal: ", pre_selection_signal) 
 
     #df[i].Filter("Jet1_Selected_jets_discriminator >0.95 && Jet2_Selected_jets_discriminator > 0.95")
+
+
     if  (str(i) != 'QCD1') and (str(i) != 'QCD2') and (str(i) != 'QCD3') and (str(i) != 'QCD4') and (str(i) != 'QCD5') and (str(i) != 'QCD6') and (str(i) != 'QCD7') and (str(i) != 'QCD8'):
-        df[i] = df[i].Filter("new_discriminator[Jet1_index] > 0.996 && new_discriminator[Jet2_index] >0.98")
+        #df[i] = df[i].Filter("new_discriminator[Jet1_index] > 0.996 && new_discriminator[Jet2_index] >0.98")
         df[i] = df[i].Filter("Jet1_Selected_jet_softdrop > 115 && Jet1_Selected_jet_softdrop < 145").Filter("Jet2_Selected_jet_softdrop > 115 && Jet2_Selected_jet_softdrop < 145")
 
      
@@ -303,15 +309,19 @@ for i in processes:
         post_selection_background = df[i].Count().GetValue()
         
         print("post preselection background (non cumulative) for {}: {}".format(i, post_selection_background))
-
+        
         total_events_post = total_events_post + post_selection_background
         print("total post selection",total_events_post)
 
         percentage = post_selection_background/dataset_events[i]
         print("percentage of {} that passes selection: {}".format(i, percentage))
+
+        weighted_post_selection = post_selection_background*new_weights[i]
+        print("total weighted post selection background:" , weighted_post_selection)
+
     else:
         post_selection_signal = df[i].Count().GetValue() * new_weights[i]
-
+        print("percentage: ", df[i].Count().GetValue()/dataset_events[i])
         print("post preselection signal: ", post_selection_signal)
 
     #print("finished jets selection for dataset: {}".format(i))
@@ -390,14 +400,14 @@ for i in processes:
 
 
 
-output_file = ROOT.TFile.Open("histograms_flashshim_QCD_and_signal.root", "RECREATE")
+# output_file = ROOT.TFile.Open("histograms_flashshim_signal_10_bins.root", "RECREATE")
 
 
-for i in processes:
-    output_file.WriteObject(h1[i], "h1_" + str(i))
-    output_file.WriteObject(h2[i], "h2_" + str(i))
-    # output_file.WriteObject(h_tot[i], "h_tot" + str(i))
-    output_file.WriteObject(h2_2[i], "h2_2_" + str(i))
+# for i in processes:
+#     output_file.WriteObject(h1[i], "h1_" + str(i))
+#     output_file.WriteObject(h2[i], "h2_" + str(i))
+#     # output_file.WriteObject(h_tot[i], "h_tot" + str(i))
+#     output_file.WriteObject(h2_2[i], "h2_2_" + str(i))
 
 
-print("written on txt")
+# print("written on txt")

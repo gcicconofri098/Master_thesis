@@ -37,18 +37,18 @@ weights = {
     "signal": 0.01053 * integrated_luminosity,
 }
 
-h1= {}
-h2= {}
+h1 = {}
+h2 = {}
 h_tot = {}
 hist_sum = {}
 
-histo_file = ROOT.TFile.Open("histograms_from_analysis_QCD_only_pt_pres.root", "READ")
+histo_file = ROOT.TFile.Open("histograms_flashshim_QCD_and_signal.root", "READ")
 
-h1["QCD1"] = histo_file.Get("h1_QCD1")
-h1["QCD2"] = histo_file.Get("h1_QCD2")
-h1["QCD3"] = histo_file.Get("h1_QCD3")
-h1["QCD4"] = histo_file.Get("h1_QCD4")
-h1["QCD5"] = histo_file.Get("h1_QCD5")
+# h1["QCD1"] = histo_file.Get("h1_QCD1")
+# h1["QCD2"] = histo_file.Get("h1_QCD2")
+# h1["QCD3"] = histo_file.Get("h1_QCD3")
+# h1["QCD4"] = histo_file.Get("h1_QCD4")
+# h1["QCD5"] = histo_file.Get("h1_QCD5")
 h1["QCD6"] = histo_file.Get("h1_QCD6")
 h1["QCD7"] = histo_file.Get("h1_QCD7")
 h1["QCD8"] = histo_file.Get("h1_QCD8")
@@ -71,9 +71,7 @@ h1["QCD8"] = histo_file.Get("h1_QCD8")
 # h1["ST_tw_antitop"] = histo_file.Get("h2_2_ST_tw_antitop")
 
 
-
 # h1["ST_tw_top"] = histo_file.Get("h2_2_ST_tw_top")
-
 
 
 # h1["GGH"] = histo_file.Get("h2_2_GGH")
@@ -103,28 +101,25 @@ h1["QCD8"] = histo_file.Get("h1_QCD8")
 
 # h1["ZZ"] = histo_file.Get("h2_2_ZZ")
 
-#h1["signal"] = histo_file.Get("h2_signal")
-
-
+h1["signal"] = histo_file.Get("h1_signal")
 
 
 processes = list(h1.keys())
 
 
 for i in processes:
-    #* the value to normalize at the same integrated luminosity of the AN is 2.27
-    #print(type(h1[i]))
+    # * the value to normalize at the same integrated luminosity of the AN is 2.27
+    # print(type(h1[i]))
     h1[i].Scale(weights[i])
 
-    #h1[i].Rebin(2)
-
+    # h1[i].Rebin(2)
 
     # h1[i].GetXaxis().SetRangeUser(40, 220)
     # h1[i].GetYaxis().SetRangeUser(40, 220)
 
-    #h2[i].GetXaxis().SetRangeUser(80., 150.)
+    # h2[i].GetXaxis().SetRangeUser(80., 150.)
     # h_tot[i].GetXaxis().SetRangeUser(40., 500.)
-    #hist_sum[i].GetXaxis().SetRange(0, 500)
+    # hist_sum[i].GetXaxis().SetRange(0, 500)
 
     # if str(i)== "QCD1" or str(i)== "QCD2" or str(i)== "QCD3" or str(i)== "QCD4" or str(i)== "QCD5" or str(i)== "QCD6" or str(i)== "QCD7" or str(i)== "QCD8":
     #     h1[i].Scale(30)
@@ -140,12 +135,12 @@ hist_ST = None
 hist_singleH = None
 
 
-hist_QCD = h1["QCD1"].Clone()
-hist_QCD.Add(h1["QCD2"])
-hist_QCD.Add(h1["QCD3"])
-hist_QCD.Add(h1["QCD4"])
-hist_QCD.Add(h1["QCD5"])
-hist_QCD.Add(h1["QCD6"])
+hist_QCD = h1["QCD6"].Clone()
+# hist_QCD.Add(h1["QCD2"])
+# hist_QCD.Add(h1["QCD3"])
+# hist_QCD.Add(h1["QCD4"])
+# hist_QCD.Add(h1["QCD5"])
+# hist_QCD.Add(h1["QCD6"])
 hist_QCD.Add(h1["QCD7"])
 hist_QCD.Add(h1["QCD8"])
 
@@ -325,44 +320,44 @@ c2 = ROOT.TCanvas("c2", "Jet1 contributions after preselection", 800, 700)
 # TODO Different contributions for the various type of background Jet1
 
 
-#c2.Divide(3, 3)
+# c2.Divide(3, 3)
 
-#c2.cd(1)
+# c2.cd(1)
 hist_QCD.Draw("HIST")
 hist_QCD.SetLineColor(ROOT.kBlue + 1)
 hist_QCD.SetLineWidth(2)
-#h1['signal'].SetFillColorAlpha(ROOT.kAzure + 6, 0.8)
+# h1['signal'].SetFillColorAlpha(ROOT.kAzure + 6, 0.8)
 
-#c2.SetGrid()
+# c2.SetGrid()
 
-#c2.cd(2)
-#hist_VJets.Draw("HIST")
+# c2.cd(2)
+# hist_VJets.Draw("HIST")
 
-#c2.cd(3)
+# c2.cd(3)
 
-#hist_TTBar_Had.Draw("HIST")
+# hist_TTBar_Had.Draw("HIST")
 
-#c2.cd(4)
+# c2.cd(4)
 
-#hist_ST.Draw("HIST")
+# hist_ST.Draw("HIST")
 
-#c2.cd(5)
+# c2.cd(5)
 
-#hist_TTBar_Semilep.Draw("HIST")
+# hist_TTBar_Semilep.Draw("HIST")
 
-#c2.cd(6)
+# c2.cd(6)
 
-#hist_singleH.Draw("HIST")
-
-
-#c2.cd(7)
-
-#hist_VV.Draw("HIST")
+# hist_singleH.Draw("HIST")
 
 
-#c2.cd(8)
+# c2.cd(7)
 
-#hist_QCD.Draw("HIST")
+# hist_VV.Draw("HIST")
+
+
+# c2.cd(8)
+
+# hist_QCD.Draw("HIST")
 
 
 c3 = ROOT.TCanvas("c3", "Stacked contributions for jet1 after preselection", 800, 700)
@@ -371,11 +366,14 @@ c3 = ROOT.TCanvas("c3", "Stacked contributions for jet1 after preselection", 800
 # TODO Stacked histograms for Jet1
 
 
-# temp1.Draw("HIST")
-# temp1.SetTitle("Distribution of Jet1 discriminator")
-# # temp1.SetLineColor(ROOT.kBlue+1)
-# temp1.SetFillColorAlpha(ROOT.kAzure + 6, 0.8)
-# legend.AddEntry(temp1, "QCD", "f")
+hist_QCD.Draw("HIST")
+hist_QCD.SetTitle(
+    "Distribution of Jet1 softdrop considering a mass window, preselection only"
+)
+# hist_QCD.SetLineColor(ROOT.kBlue+1)
+hist_QCD.SetFillColorAlpha(ROOT.kAzure + 6, 0.8)
+hist_QCD.GetXaxis().SetTitle("Softdrop mass")
+legend.AddEntry(hist_QCD, "QCD", "f")
 
 
 # temp1.ResetStats()
@@ -417,21 +415,19 @@ c3 = ROOT.TCanvas("c3", "Stacked contributions for jet1 after preselection", 800
 # temp6.SetFillColorAlpha(ROOT.kGreen - 8, 0.8)
 # legend.AddEntry(temp6, "V + jets", "f")
 
-# h1["signal"].Draw("SAME HIST")
-# h1["signal"].Scale(10)
-# h1["signal"].SetLineColor(ROOT.kBlack)
-# h1["signal"].SetLineWidth(2)
+h1["signal"].Draw("SAME HIST")
+h1["signal"].Scale(100000)
+h1["signal"].SetLineColor(ROOT.kBlack)
+h1["signal"].SetLineWidth(2)
 
-# legend.AddEntry(h1["signal"], "signal x 10", "l")
+legend.AddEntry(h1["signal"], "signal x 100000", "l")
+
+legend.Draw()
 
 
-# legend.Draw()
-
-
-c2.SaveAs(
-    "/gpfs/ddn/cms/user/cicco/miniconda3/analysis/figures/scratch/QCD_pt_jet1.pdf"
-)
-# c3.SaveAs(
-#     "/gpfs/ddn/cms/user/cicco/miniconda3/analysis/figures/scratch/2d_discr_test.pdf"
+# c2.SaveAs(
+#     "/gpfs/ddn/cms/user/cicco/miniconda3/analysis/figures/scratch/QCD_pt_jet1.pdf"
 # )
-
+c3.SaveAs(
+    "/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/softdrop_jet1_flashsim.pdf"
+)
