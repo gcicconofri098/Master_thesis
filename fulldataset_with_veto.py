@@ -27,6 +27,8 @@ efficiency = 0
 post_selection_signal = 0
 rejection = 0
 
+qcd_post_sel_weighted = 0
+
 temp = 0
 
 weights = {
@@ -91,11 +93,15 @@ files = {
     "WW": "/scratchnvme/cicco/WW/",
     "WZ": "/scratchnvme/cicco/WZ/",
     "ZZ": "/scratchnvme/cicco/ZZ/",
-    "signal": "/scratchnvme/cicco/signal_RunIISummer20UL16/",
+    "signal": "/scratchnvme/cicco/signal_RunIISummer20UL16_flash/",
 }
 
 #processes = list(files.keys())
+#processes = ['QCD6', 'QCD7', 'QCD8', 'signal']
+
 processes = ['signal']
+
+#processes = ['QCD1', 'QCD2', 'QCD3', 'QCD4', 'QCD5', 'QCD6', 'QCD7', 'QCD8']
 
 for i in processes:
     f = os.listdir(files.get(i))
@@ -121,6 +127,8 @@ total_events = 0
 
 total_events_post = 0
 
+total_post_sel_weighted = 0
+
 for i in processes:
     print("Begin selection: {}".format(i))
     dataset_events[i] = df[i].Count().GetValue()
@@ -128,8 +136,8 @@ for i in processes:
     if str(i) != 'signal':
         total_events = total_events + dataset_events[i]
         print("total",total_events)
-    new_weights[i] = weights[i] / dataset_events[i]
-    print("preselection events in dataset {}: {}".format(i, dataset_events[i]*new_weights[i]))
+    new_weights[i] = weights[i] / 540000
+    #print("preselection events in dataset {}: {}".format(i, dataset_events[i]*new_weights[i]))
     #print(new_weights[i])
 
     df[i] = df[i].Filter("nFatJet>=2")
@@ -141,17 +149,17 @@ for i in processes:
         .Define(
             # mu = 13, e = 11
             "FatJet_Selection",
-            "FatJet_pt > 300 && abs(FatJet_eta) < 2.4 && fatjet_lepton_isolation(FatJet_eta, FatJet_phi, Electron_pt, Electron_eta, Electron_phi, Electron_pfRelIso03_all, 11)  && fatjet_lepton_isolation(FatJet_eta, FatJet_phi, Muon_pt, Muon_eta, Muon_phi, Muon_pfRelIso03_all, 13)",
+            "Post_calibration_pt > 300 && abs(FatJet_eta) < 2.4 && fatjet_lepton_isolation(FatJet_eta, FatJet_phi, Electron_pt, Electron_eta, Electron_phi, Electron_pfRelIso03_all, 11)  && fatjet_lepton_isolation(FatJet_eta, FatJet_phi, Muon_pt, Muon_eta, Muon_phi, Muon_pfRelIso03_all, 13)",
         )
         .Define("Softdrop_sel_jets", "FatJet_msoftdrop[FatJet_Selection]")
-        .Define("Discriminator_Xbb", "FatJet_particleNetMD_Xbb[FatJet_Selection]")
-        .Define("Discriminator_Xcc", "FatJet_particleNetMD_Xcc[FatJet_Selection]")
-        .Define("Discriminator_Xqq", "FatJet_particleNetMD_Xqq[FatJet_Selection]")
-        .Define("new_discriminator", "Discriminator_Xbb/(1-Discriminator_Xcc - Discriminator_Xqq)")
-        #.Define("new_discriminator", "FatJet_particleNetMD_XbbvsQCD[FatJet_Selection]")
+        # .Define("Discriminator_Xbb", "FatJet_particleNetMD_Xbb[FatJet_Selection]")
+        # .Define("Discriminator_Xcc", "FatJet_particleNetMD_Xcc[FatJet_Selection]")
+        # .Define("Discriminator_Xqq", "FatJet_particleNetMD_Xqq[FatJet_Selection]")
+        # .Define("new_discriminator", "Discriminator_Xbb/(1-Discriminator_Xcc - Discriminator_Xqq)")
+        .Define("new_discriminator", "FatJet_particleNetMD_XbbvsQCD[FatJet_Selection]")
         .Define("Eta_sel_jets", "FatJet_eta[FatJet_Selection]")
         .Define("Phi_sel_jets", "FatJet_phi[FatJet_Selection]")
-        .Define("Pt_sel_jets", "FatJet_pt[FatJet_Selection]")
+        .Define("Pt_sel_jets", "Post_calibration_pt[FatJet_Selection]")
     )
     df[i] = df[i].Filter("new_discriminator.size()>=2")
 
@@ -189,9 +197,11 @@ for i in processes:
         .Define("Jet2_Selected_jets_pt", "Pt_sel_jets[Jet2_index]")
 
     )
+    print("count postpreselection, no veto, no MET: ",df[i].Count().GetValue())
 
-    df[i] = df[i].Filter("new_discriminator[Jet1_index]>0.86")
+    #df[i] = df[i].Filter("new_discriminator[Jet1_index]>0.86")
     df[i] = df[i].Filter("MET_pt <100")
+    print("count postpreselection, no veto: ",df[i].Count().GetValue())
 
     # if str(i) == "WJets1":
     #     col_to_save = {
@@ -284,8 +294,9 @@ for i in processes:
         .Define(
             "VBF_events", "nJet >=2 && abs(Delta_eta) >4.0 && Jet_invariant_mass > 500"
         )
-        .Filter("!VBF_events")
+        #.Filter("!VBF_events")
     )
+    print("count postpreselection with veto: ",df[i].Count().GetValue())
 
     # if str(i) != "signal":
     #     pre_selection_background = (
@@ -303,7 +314,8 @@ for i in processes:
         #df[i] = df[i].Filter("new_discriminator[Jet1_index] > 0.996 && new_discriminator[Jet2_index] >0.98")
         df[i] = df[i].Filter("Jet1_Selected_jet_softdrop > 115 && Jet1_Selected_jet_softdrop < 145").Filter("Jet2_Selected_jet_softdrop > 115 && Jet2_Selected_jet_softdrop < 145")
 
-     
+    print("count postpreselection with veto and mass window: ",df[i].Count().GetValue())
+
 
     if str(i) != "signal":
         post_selection_background = df[i].Count().GetValue()
@@ -319,12 +331,26 @@ for i in processes:
         weighted_post_selection = post_selection_background*new_weights[i]
         print("total weighted post selection background:" , weighted_post_selection)
 
-    else:
+    
+    #print("finished jets selection for dataset: {}".format(i))
+    if  (str(i) != 'QCD1') and (str(i) != 'QCD2') and (str(i) != 'QCD3') and (str(i) != 'QCD4') and (str(i) != 'QCD5') and (str(i) != 'QCD6') and (str(i) != 'QCD7') and (str(i) != 'QCD8') and (str(i) != 'signal') :
+
+        total_post_sel_weighted = total_post_sel_weighted + df[i].Count().GetValue() * new_weights[i]
+
+    elif (str(i) == 'signal'):
         post_selection_signal = df[i].Count().GetValue() * new_weights[i]
         print("percentage: ", df[i].Count().GetValue()/dataset_events[i])
         print("post preselection signal: ", post_selection_signal)
 
-    #print("finished jets selection for dataset: {}".format(i))
+    else:
+        qcd_post_sel_weighted = qcd_post_sel_weighted + df[i].Count().GetValue() * new_weights[i]
+
+qcd_post_sel_weighted = qcd_post_sel_weighted * 0.035 #0.04 #0.035 for fullsim
+
+total_weighted = total_post_sel_weighted + qcd_post_sel_weighted
+
+print("total background weighted with QCD corrected", total_weighted)
+    
 
 
 #print("efficiency: ", post_selection_signal / pre_selection_signal)
@@ -370,25 +396,31 @@ for i in processes:
     # )
 
     histo2d[i] = df[i].Histo2D(
-        ("Jet1 vs Jet2", "Jet1 vs Jet2; Jet1; Jet2", 10, 0.95, 1, 10, 0.95, 1),
+        ("Jet1 vs Jet2", "Jet1 vs Jet2; Jet1; Jet2", 10, 0.8, 1, 10, 0.8, 1),
         "Jet1_Selected_jets_discriminator",
         "Jet2_Selected_jets_discriminator",
     )
 
+#     histo2d[i] = df[i].Histo2D(
+#     ("Jet1 vs Jet2", "Jet1 vs Jet2; Jet1; Jet2", 18, 25, 295, 18, 25, 295),
+#     "Jet1_Selected_jet_softdrop",
+#     "Jet2_Selected_jet_softdrop",
+# )
+
     print("created histograms for: {}".format(i))
 
-    h1[i] = hist1[i].GetValue()
+    # h1[i] = hist1[i].GetValue()
 
-    #     if str(i) != "signal":
-    #         jet1_bckg = jet1_bckg + h1[i].GetEntries() * new_weights[i]
+    # #     if str(i) != "signal":
+    # #         jet1_bckg = jet1_bckg + h1[i].GetEntries() * new_weights[i]
 
-    h1[i].Scale(1 / dataset_events[i])
+    # h1[i].Scale(1 / dataset_events[i])
 
-    h2[i] = hist2[i].GetValue()
-    h2[i].Scale(1 / dataset_events[i])
+    # h2[i] = hist2[i].GetValue()
+    # h2[i].Scale(1 / dataset_events[i])
 
     h2_2[i] = histo2d[i].GetValue()
-    h2_2[i].Scale(1 / dataset_events[i])
+    h2_2[i].Scale(1 / 540000)
 
 #     # h_tot[i] = hist_tot[i].GetValue()
 #     # h_tot[i].Scale(1 / dataset_events[i])
@@ -400,14 +432,14 @@ for i in processes:
 
 
 
-# output_file = ROOT.TFile.Open("histograms_flashshim_signal_10_bins.root", "RECREATE")
+output_file = ROOT.TFile.Open("histograms_2d_discr_0_8_mass_window_no_discr_pres_no_veto_VBF_flashsim_corrected_n_events.root", "RECREATE")
 
 
-# for i in processes:
-#     output_file.WriteObject(h1[i], "h1_" + str(i))
-#     output_file.WriteObject(h2[i], "h2_" + str(i))
-#     # output_file.WriteObject(h_tot[i], "h_tot" + str(i))
-#     output_file.WriteObject(h2_2[i], "h2_2_" + str(i))
+for i in processes:
+    # output_file.WriteObject(h1[i], "h1_" + str(i))
+    # output_file.WriteObject(h2[i], "h2_" + str(i))
+    # output_file.WriteObject(h_tot[i], "h_tot" + str(i))
+    output_file.WriteObject(h2_2[i], "h2_2_" + str(i))
 
 
-# print("written on txt")
+print("written on txt")

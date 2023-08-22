@@ -14,13 +14,15 @@ df = {}
 hist_2d = {}
 h2_2 = {}
 
-h_QCD = {}
+h2_2 = {}
 
 integrated_luminosity = 59830
 dataset_events = {}
-#pre_sel_bckg = 54321.15330935305  #fullsim 
+#pre_sel_bckg = 54156.40533685765  #fullsim 
 
-pre_sel_bckg = 449938.7982675412
+#pre_sel_bckg =  54321.15330935305 #fullsim prima
+
+pre_sel_bckg = 17996.85547287977  #flashsim
 
 binx_n = 1
 biny_n = 1
@@ -61,19 +63,21 @@ weights = {
     "ZZ": 16.52 * integrated_luminosity,
 }
 
-histo_file = ROOT.TFile.Open("histograms_flashshim_QCD_and_signal.root", "READ")
+histo_file = ROOT.TFile.Open("histograms_flashshim_QCD_and_signal.root", "READ") #flashsim
 
-#QCD_file = ROOT.TFile.Open("histograms_for_QCD_reshaping_2d_discr_0_86.root", "READ")
+#histo_file = ROOT.TFile.Open("histograms_2d_discr_mass_window_QCD_for_reshape_fullsim.root", "READ") #fullsim
+
+#QCD_file = ROOT.TFile.Open("histograms_for_QCD_reshaping_2d_discr_0_86.root", "READ") #obsolete, all the histograms are together 
 
 
-# h_QCD["QCD1"] = histo_file.Get("h2_2_QCD1")
-# h_QCD["QCD2"] = histo_file.Get("h2_2_QCD2")
-# h_QCD["QCD3"] = histo_file.Get("h2_2_QCD3")
-# h_QCD["QCD4"] = histo_file.Get("h2_2_QCD4")
-# h_QCD["QCD5"] = histo_file.Get("h2_2_QCD5")
-h_QCD["QCD6"] = histo_file.Get("h2_2_QCD6")
-h_QCD["QCD7"] = histo_file.Get("h2_2_QCD7")
-h_QCD["QCD8"] = histo_file.Get("h2_2_QCD8")
+# h2_2["QCD1"] = histo_file.Get("h2_2_QCD1")
+# h2_2["QCD2"] = histo_file.Get("h2_2_QCD2")
+# h2_2["QCD3"] = histo_file.Get("h2_2_QCD3")
+# h2_2["QCD4"] = histo_file.Get("h2_2_QCD4")
+# h2_2["QCD5"] = histo_file.Get("h2_2_QCD5")
+h2_2["QCD6"] = histo_file.Get("h2_2_QCD6")
+h2_2["QCD7"] = histo_file.Get("h2_2_QCD7")
+h2_2["QCD8"] = histo_file.Get("h2_2_QCD8")
 
 # h2_2["WJets1"] = histo_file.Get("h2_2_WJets1")
 # h2_2["WJets2"] = histo_file.Get("h2_2_WJets2")
@@ -124,28 +128,28 @@ h_QCD["QCD8"] = histo_file.Get("h2_2_QCD8")
 
 
 # h2_2["ZZ"] = histo_file.Get("h2_2_ZZ")
-processes = list(h_QCD.keys())
+processes = list(h2_2.keys())
 
 
 for i in processes:
     #* the value to normalize at the same integrated luminosity of the AN is 2.27
 
-    h_QCD[i].Scale(weights[i]*2.27)
+    h2_2[i].Scale(weights[i]*2.27)
 
 print("finished selection")
 
-hist2d_bckg = h_QCD["QCD6"].Clone()
-# hist2d_bckg.Add(h_QCD["QCD2"])
-# hist2d_bckg.Add(h_QCD["QCD3"])
-# hist2d_bckg.Add(h_QCD["QCD4"])
-# hist2d_bckg.Add(h_QCD["QCD5"])
-# hist2d_bckg.Add(h_QCD["QCD6"])
-hist2d_bckg.Add(h_QCD["QCD7"])
-hist2d_bckg.Add(h_QCD["QCD8"])
+hist2d_bckg = h2_2["QCD6"].Clone()
+# hist2d_bckg.Add(h2_2["QCD2"])
+# hist2d_bckg.Add(h2_2["QCD3"])
+# hist2d_bckg.Add(h2_2["QCD4"])
+# hist2d_bckg.Add(h2_2["QCD5"])
+# hist2d_bckg.Add(h2_2["QCD6"])
+hist2d_bckg.Add(h2_2["QCD7"])
+hist2d_bckg.Add(h2_2["QCD8"])
 
-#hist2d_bckg.Scale(0.035)
+#hist2d_bckg.Scale(0.035) #fullsim
 
-hist2d_bckg.Scale(0.015)
+hist2d_bckg.Scale(0.04) #flashsim
 
 # hist2d_bckg.Add(h2_2["WJets1"])
 # hist2d_bckg.Add(h2_2["WJets2"])
@@ -190,16 +194,17 @@ for binx in reversed(range(1, 11)):
 c1 = ROOT.TCanvas("c1", "Efficiency plot", 1500, 1000)
 c1.SetGrid()
 hist.Draw("text COLZ")
+hist.SetTitle("Background efficiency for flashsim")
 
 c2 = ROOT.TCanvas("c2", "plot", 1500, 1000)
 c2.SetGrid()
-hist2d_bckg.SetTitle("Background distribution")
+hist2d_bckg.SetTitle("Background distribution for flashsim")
 hist2d_bckg.Draw("text COLZ")
 
 
-c1.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/bckg_rej_num_QCD_corrected.root.pdf")
+c1.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/flashsim_bckg_rej_num_QCD_corrected.root.png")
 
-c2.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/bckg_cont_2d_QCD_corrected.root.pdf")
+c2.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/flashsim_bckg_cont_2d_QCD_corrected.root.png")
 
 
 output_file = ROOT.TFile.Open("flashsim_bckg_map_histo_QCD_corrected.root", "RECREATE")

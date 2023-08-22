@@ -55,7 +55,9 @@ weights = {
 }
 
 
-histo_file = ROOT.TFile.Open("histograms_flashshim_QCD_and_signal.root", "READ")
+histo_file = ROOT.TFile.Open("histograms_2d_discr_0_8_mass_window_no_discr_pres_no_veto_VBF_flashsim_corrected_n_events.root", "READ") #flashsim
+
+#histo_file = ROOT.TFile.Open("signal_for_s_b_10_bins.root", "READ") #fullsim
 
 h2_2["signal"] = histo_file.Get("h2_2_signal")
 
@@ -73,7 +75,13 @@ print(h2_2['signal'].GetEntries())
 
 
 
-preselection_signal = 10.000867406513017*2.27
+#preselection_signal = 10.000867406513017*2.27 #flashsim
+#preselection_signal = 10.22460045811286 *2.27 #flashsim no discriminator
+#preselection_signal = 2.51770623 *2.27 #fullsim
+#preselection_signal = 2.57837385 *2.27 #fullsim no discriminator
+
+preselection_signal = 630 *2.27 #no preselection
+
 print(preselection_signal)
 
 hist_2 = h2_2['signal'].Clone()
@@ -98,17 +106,19 @@ for binx in reversed(range(1, 21)):
 c1 = ROOT.TCanvas("c1", "plot", 4500, 3500)
 c1.SetGrid()
 h2_2['signal'].Draw("text COLZ")
+h2_2['signal'].SetTitle("Distribution of signal for flashsim")
 #h2_2['signal'].Scale(1/(h2_2['signal'].Integral()))
 
 
 c2 = ROOT.TCanvas("c2", "Efficiency plot", 4500, 3500)
 c2.SetGrid()
 hist_2.Draw("text COLZ")
+hist_2.SetTitle("Signal efficiency for flashsim")
 
-c1.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/flashsim_signal_2d_discr_mass_window.pdf")
+c1.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/flashsim_discr_0_8_signal_2d_discr_mass_window_no_discr_pres_no_veto_VBF_corrected_n_events.png")
 
 
-c2.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/flashsim_efficiency_map_num.pdf")
+c2.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/flashsim_discr_0_8_efficiency_map_num_no_discr_pres_no_veto_VBF_corrected_n_events.png")
 
 # output_file = ROOT.TFile.Open("efficiency_map_histo.root", "RECREATE")
 
