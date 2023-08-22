@@ -24,6 +24,8 @@ sig_path = (
     "/scratchnvme/cicco/CMSSW_12_2_4_patch1/src/file1.root"
 )
 
+ph2_flash_path = "/scratchnvme/cicco/CMSSW_12_2_4_patch1/src/file1_flashim.root"
+
 hist_nb0 = {}
 hist_nb1 = {}
 hist_nb2 = {}
@@ -51,18 +53,14 @@ files = {
     "QCD7_full": "/scratchnvme/cicco/QCD7/",
     "QCD8_full": "/scratchnvme/cicco/QCD8/",
     "signal_full": "/scratchnvme/cicco/signal_RunIISummer20UL16/",
-    "QCD6_flash": "/scratchnvme/cicco/QCD6_good_flash/",
-    "QCD7_flash": "/scratchnvme/cicco/QCD7_good_flash/",
-    "QCD8_flash": "/scratchnvme/cicco/QCD8_good_flash/",
-    "signal_flash": "/scratchnvme/cicco/signal_RunIISummer20UL16_flash/",
     "QCD_ph2": bckg_path,
-    "sig_ph2": sig_path
-    }
+    "sig_ph2": sig_path,
+    "signal_flash": ph2_flash_path}
 
-processes = list(files.keys())
-#processes = ['signal_full', 'signal_flash', 'sig_ph2']
+#processes = list(files.keys())
+processes = ['signal_full', 'signal_flash', 'sig_ph2']
 for i in processes:
-    if str(i) != 'sig_ph2' and str(i)!= 'QCD_ph2':
+    if str(i) != 'sig_ph2' and str(i)!= 'QCD_ph2' and str(i)!= 'signal_flash':
         f = os.listdir(files.get(i))
         num = len(f)
         entries1[i] = []
@@ -73,47 +71,51 @@ for i in processes:
         df[i] = ROOT.RDataFrame("Events", entries1[i])
 
         print("added file to: {}".format(i))
-    else:
+    elif str(i)!= 'signal_flash':
+
         df[i]= ROOT.RDataFrame("MJets", str(files[i]))
+    
+    else:
+
+        df[i]= ROOT.RDataFrame("Events", str(files[i]))
+
 
 
 for i in processes:
     print("Begin selection: {}".format(i))
 
-    if str(i) == 'QCD6_flash' or str(i) == 'QCD7_flash' or str(i) == 'QCD8_flash' or str(i) == 'signal_flash': 
-            
-    
-    
+
+    if str(i) == 'QCD6_flash' or str(i) == 'QCD7_flash' or str(i) == 'QCD8_flash' : 
         df[i] = (
 
             df[i].Define("Post_calibration_pt", "calibrate_pt(FatJet_eta, FatJet_pt)")
         )
         df[i] = (df[i]
         .Define("matching_index" , "lepton_matching_index(FatJet_eta, FatJet_phi, GenJetAK8_eta, GenJetAK8_phi)")
-        .Define("Selection", "Post_calibration_pt> 300 && Post_calibration_pt< 500 && abs(FatJet_eta) < 1.5 && matching_index>=0")
-        .Define("Selected_jets", "Post_calibration_pt[Selection]")
+        .Define("Selection", "Post_calibration_pt> 300 && Post_calibration_pt< 500 && abs(FatJet_eta) < 2.5 && matching_index>=0")
+        
         )
-
         df[i] = df[i].Filter("!matching_index.empty()")
 
     elif str(i) == 'QCD_ph2' or str(i) == 'sig_ph2':
         df[i] = df[i].Define("Post_calibration_pt", "calibrate_pt(Mfatjet_eta, MgenjetAK8_pt)")
         
-        df[i] = df[i].Define("Selection","Post_calibration_pt> 300 && Post_calibration_pt< 500 && abs(Mfatjet_eta) < 1.5&& new_index>=0")
+        df[i] = df[i].Define("Selection","Post_calibration_pt> 300 && Post_calibration_pt< 500 && abs(Mfatjet_eta) < 2.5&& new_index>=0")
         df[i] = df[i].Filter("!new_index.empty()")
+
+    elif  str(i) == 'signal_flash':
+
+        df[i] = df[i].Define("Selection","FatJet_pt> 300 && FatJet_pt< 500 && abs(FatJet_eta) < 2.5")
+        
+
 
     else: #fullsim
 
-
-        df[i] = df[i].Define("Selection", "FatJet_pt> 300 && FatJet_pt< 500 && abs(FatJet_eta) < 1.5 && FatJet_genJetAK8Idx>=0")
-        df[i] = df[i].Define("Selected_jets", "FatJet_pt[Selection]")
-        df[i] = df[i].Filter("Selected_jets.size()!=0")
-
+        df[i] = df[i].Define("Selection", "FatJet_pt> 300 && FatJet_pt< 500 && abs(FatJet_eta) < 2.5 && FatJet_genJetAK8Idx>=0")
         df[i] = df[i].Filter("!FatJet_genJetAK8Idx.empty()")
 
 
-
-    if str(i) == 'QCD6_flash' or str(i) == 'QCD7_flash' or str(i) == 'QCD8_flash' or str(i) == 'signal_flash':
+    if str(i) == 'QCD6_flash' or str(i) == 'QCD7_flash' or str(i) == 'QCD8_flash' :
         df[i] = (
             df[i]
             .Define("new_discriminator", "FatJet_particleNetMD_XbbvsQCD[Selection]")
@@ -121,8 +123,14 @@ for i in processes:
             .Define("FatJet_phi_sel", "FatJet_phi[Selection]")
             .Define("GenJetAK8_eta_sel", "Take(GenJetAK8_eta, Selection)")
             .Define("GenJetAK8_phi_sel", "Take(GenJetAK8_phi, Selection)")
+        )
 
-
+    elif str(i) == 'signal_flash':
+        df[i] = (
+            df[i]
+            .Define("new_discriminator", "FatJet_particleNetMD_XbbvsQCD[Selection]")
+            .Define("FatJet_eta_sel", "FatJet_eta[Selection]")
+            .Define("FatJet_phi_sel", "FatJet_phi[Selection]")
         )
 
     elif str(i) == 'QCD_ph2' or str(i) == 'sig_ph2': 
@@ -132,7 +140,7 @@ for i in processes:
     )
         
     else: #*fullsim
-        df[i] = (
+            df[i] = (
             df[i]
             .Define("FatJet_eta_sel", "FatJet_eta[Selection]")
             .Define("FatJet_phi_sel", "FatJet_phi[Selection]")
@@ -142,7 +150,7 @@ for i in processes:
             .Define("new_discriminator", "Discriminator_Xbb/(1-Discriminator_Xcc - Discriminator_Xqq)")
             )
 
-    if str(i) !=  'sig_ph2' and str(i) != 'QCD_ph2':
+    if str(i) !=  'sig_ph2' and str(i) != 'QCD_ph2' and str(i)!= 'signal_flash':
 
         df[i] = df[i].Define(
         "GenPart_IsLastB",
@@ -165,8 +173,8 @@ for i in processes:
 
     if str(i) == 'QCD6_flash' or str(i) == 'QCD7_flash' or str(i) == 'QCD8_flash' or str(i) == 'signal_flash':
 
-        df[i] = df[i].Define("MgenjetAK8_nbFlavour", "count_nHadrons(GenPart_eta_good, GenPart_phi_good, GenJetAK8_eta, GenJetAK8_phi)").Define("Matching_nb_flavour", "Take(MgenjetAK8_nbFlavour, matching_index[Selection])")
-        #df[i] = df[i].Define("Matching_nb_flavour", "FatJet_nBhadrons[Selection]")
+        #df[i] = df[i].Define("MgenjetAK8_nbFlavour", "count_nHadrons(GenPart_eta_good, GenPart_phi_good, GenJetAK8_eta, GenJetAK8_phi)").Define("Matching_nb_flavour", "Take(MgenjetAK8_nbFlavour, matching_index[Selection])")
+        df[i] = df[i].Define("Matching_nb_flavour", "FatJet_nBhadrons[Selection]")
 
     elif str(i) == 'QCD_ph2' or str(i) == 'sig_ph2':
 
@@ -194,15 +202,15 @@ for i in processes:
         )
     
     hist_nb0[i] = df[i].Histo1D(
-        (str(i), str(i) + "; Discriminator; Events", 100, 0, 1), "discriminator_nb_0"
+        (str(i), str(i) + "; Discriminator; Events", 50, -0.1, 1), "discriminator_nb_0"
     )
 
     hist_nb1[i] = df[i].Histo1D(
-        (str(i), str(i) + "; Discriminator; Events", 100, 0, 1), "discriminator_nb_1"
+        (str(i), str(i) + "; Discriminator; Events", 50, -0.1, 1), "discriminator_nb_1"
     )
 
     hist_nb2[i] = df[i].Histo1D(
-        (str(i), str(i) + "; Discriminator; Events", 100, 0, 1), "discriminator_nb_2"
+        (str(i), str(i) + "; Discriminator; Events", 50, -0.1, 1), "discriminator_nb_2"
     )
 
     # if str(i)=='QCD1_full' or str(i) == 'QCD2_full' or str(i) == 'QCD3_full' or str(i) == 'QCD4_full' or str(i) == 'QCD5_full' or str(i) == 'QCD6_full' or str(i) == 'QCD7_full' or str(i) == 'QCD8_full' or str(i) == 'signal_full':
@@ -222,15 +230,15 @@ for i in processes:
 
 # #! HISTOGRAMS FULLSIM
 
-hist_fullsim_nb0 = h_nb0['QCD1_full'].Clone()
-hist_fullsim_nb0.Add(h_nb0['QCD2_full'])
-hist_fullsim_nb0.Add(h_nb0['QCD3_full'])
-hist_fullsim_nb0.Add(h_nb0['QCD4_full'])
-hist_fullsim_nb0.Add(h_nb0['QCD5_full'])
-hist_fullsim_nb0.Add(h_nb0['QCD6_full'])
-hist_fullsim_nb0.Add(h_nb0['QCD7_full'])
-hist_fullsim_nb0.Add(h_nb0['QCD8_full'])
-#hist_fullsim_nb0 =(h_nb0['signal_full']).Clone()
+# hist_fullsim_nb0 = h_nb0['QCD1_full'].Clone()
+# hist_fullsim_nb0.Add(h_nb0['QCD2_full'])
+# hist_fullsim_nb0.Add(h_nb0['QCD3_full'])
+# hist_fullsim_nb0.Add(h_nb0['QCD4_full'])
+# hist_fullsim_nb0.Add(h_nb0['QCD5_full'])
+# hist_fullsim_nb0.Add(h_nb0['QCD6_full'])
+# hist_fullsim_nb0.Add(h_nb0['QCD7_full'])
+# hist_fullsim_nb0.Add(h_nb0['QCD8_full'])
+hist_fullsim_nb0 =(h_nb0['signal_full']).Clone()
 
 hist_fullsim_nb0.ResetStats()
 
@@ -257,18 +265,16 @@ hist_fullsim_nb1.ResetStats()
 # hist_fullsim_nb2.Add(h_nb2['QCD8_full'])
 hist_fullsim_nb2 =(h_nb2['signal_full']).Clone()
 
-print("nb=2 fullsim entries", hist_fullsim_nb2.GetEntries() )
-
 
 hist_fullsim_nb2.ResetStats()
 
 #! HISTOGRAMS FLASHSHIM 
 
 
-hist_flashsim_nb0 = h_nb0['QCD6_flash'].Clone()
-hist_flashsim_nb0.Add(h_nb0['QCD7_flash'])
-hist_flashsim_nb0.Add(h_nb0['QCD8_flash'])
-#hist_flashsim_nb0 =(h_nb0['signal_flash']).Clone()
+# hist_flashsim_nb0 = h_nb0['QCD6_flash'].Clone()
+# hist_flashsim_nb0.Add(h_nb0['QCD7_flash'])
+# hist_flashsim_nb0.Add(h_nb0['QCD8_flash'])
+hist_flashsim_nb0 =(h_nb0['signal_flash']).Clone()
 
 hist_flashsim_nb0.ResetStats()
 
@@ -286,15 +292,12 @@ hist_flashsim_nb1.ResetStats()
 # hist_flashsim_nb2.Add(h_nb2['QCD8_flash'])
 hist_flashsim_nb2 =(h_nb2['signal_flash']).Clone()
 
-print("nb=2 flashsim entries", hist_flashsim_nb2.GetEntries() )
-
-
 hist_flashsim_nb2.ResetStats()
 
-# #! HISTOGRAMS PHASE2   
+#! HISTOGRAMS PHASE2   
 
-hist_phase2_nb0 = h_nb0['QCD_ph2'].Clone()
-#hist_phase2_nb0 = h_nb0['sig_ph2'].Clone()
+#hist_phase2_nb0 = h_nb0['QCD_ph2'].Clone()
+hist_phase2_nb0 = h_nb0['sig_ph2'].Clone()
 
 
 #hist_phase2_nb1 = h_nb1['QCD_ph2'].Clone()
@@ -342,7 +345,6 @@ temp0_ph2 = 0
 temp1_ph2 = 0
 temp2_ph2 = 0
 
-bin_lower = np.array([])
 
 for i in reversed(range(0, 101)):
 
@@ -368,7 +370,7 @@ for i in reversed(range(0, 101)):
 
     # full_nb2 = np.append(hist_fullsim_nb2.Integral(i, 200), full_nb2)
 
-    #fp_full_nb2 = np.append(hist_fullsim_nb2.Integral(i,200), fp_full_nb2)
+    # #fp_full_nb2 = np.append(hist_fullsim_nb2.Integral(i,200), fp_full_nb2)
 
     temp0_flash = temp0_flash + hist_flashsim_nb0.GetBinContent(i)
 
@@ -420,12 +422,11 @@ for i in reversed(range(0, 101)):
 
     # #fp_ph2_nb2 = np.append(hist_phase2_nb2.Integral(i,200), fp_ph2_nb2)
     
-    bin_lower = np.append(hist_fullsim_nb2.GetBinLowEdge(i), bin_lower)
-
+    if float(hist_fullsim_nb2.GetBinLowEdge(i)) >= 0.75 and float(hist_fullsim_nb2.GetBinLowEdge(i))<= 0.9:
     
-    #print("bin {} with lower edge {}".format(i, hist_fullsim_nb2.GetBinLowEdge(i)))
+        print("bin {} with lower edge {}".format(i, hist_fullsim_nb2.GetBinLowEdge(i)))
 
-print(bin_lower)
+
 
 
 total_full_nb0 = temp0_full
@@ -452,12 +453,22 @@ tp_per_ph2_nb0 = ph2_nb0/total_ph2_nb0
 tp_per_ph2_nb1 = ph2_nb1/total_ph2_nb1
 tp_per_ph2_nb2 = ph2_nb2/total_ph2_nb2
 
-print(f"total for nb0 is {total_flash_nb0}, for nb1 is {total_flash_nb1}, for nb2 is {total_flash_nb2}, and altogether is {total_flash_nb0 + total_flash_nb1 + total_flash_nb2}")
+#la percentuale di false positive è data dal numero di eventi di fondo che passa la selezione diviso la somma degli eventi che supera la selezione
+#* y/ (y+x), dove y è il fondo e x il segnale
+# fp_per_full_0_2 = fp_full_nb0/(fp_full_nb0 + full_nb2)
+# fp_per_full_0_1 = fp_full_nb0/(fp_full_nb0 + full_nb1)
+# fp_per_full_1_2 = fp_full_nb1/(fp_full_nb1 + full_nb2)
 
-for i in reversed(range(0, 100)):
-    if (flash_nb2[i]/total_flash_nb2)>=0.84 and (flash_nb2[i]/total_flash_nb2)<= 0.88:
-        print(f"at value of discriminator {hist_flashsim_nb2.GetBinLowEdge(i+1)} efficiency is {flash_nb2[i]/total_flash_nb2}")
+# fp_per_flash_0_2 = fp_flash_nb0/(fp_flash_nb0 + flash_nb2)
+# fp_per_flash_0_1 = fp_flash_nb0/(fp_flash_nb0 + flash_nb1)
+# fp_per_flash_1_2 = fp_flash_nb1/(fp_flash_nb1 + flash_nb2)
 
+# fp_per_ph2_0_2 = fp_ph2_nb0/(fp_ph2_nb0 + ph2_nb2)
+# fp_per_ph2_0_1 = fp_ph2_nb0/(fp_ph2_nb0 + ph2_nb1)
+# fp_per_ph2_1_2 = fp_ph2_nb1/(fp_ph2_nb1 + ph2_nb2)
+
+
+# c1 = ROOT.TCanvas("c1", "Fullsim distribution", 800, 700)
 
 
 # legend = ROOT.TLegend(0.62, 0.70, 0.82, 0.88)
@@ -529,126 +540,128 @@ for i in reversed(range(0, 100)):
 # legend3.Draw()
 
 
-# #! ALL DISCRIMINATOR CASE PER CASE
+#! ALL DISCRIMINATOR CASE PER CASE
 
-# c4 = ROOT.TCanvas("c4", "Flashsim distribution", 800, 700)
-
-
-# legend4 = ROOT.TLegend(0.62, 0.70, 0.82, 0.88)
-
-# hist_fullsim_nb0.Draw("HIST")
-# hist_fullsim_nb0.SetTitle("Discriminator distribution for background, b = 0")
-# hist_fullsim_nb0.SetLineWidth(2)
-# hist_fullsim_nb0.SetLineColor(ROOT.kBlue +1)
-# hist_fullsim_nb0.SetMinimum(1)
-# hist_fullsim_nb0.Scale(1/hist_fullsim_nb0.Integral())
-# legend4.AddEntry(hist_fullsim_nb0, "fullsim", "l")
-# print("nb0 fullsim underflow", hist_fullsim_nb0.GetBinContent(0))
+c4 = ROOT.TCanvas("c4", "Flashsim distribution", 800, 700)
 
 
-# hist_flashsim_nb0.Draw("HIST SAME")
-# hist_flashsim_nb0.SetLineWidth(2)
-# hist_flashsim_nb0.SetLineColor(ROOT.kRed +1)
-# hist_flashsim_nb0.Scale(1/hist_flashsim_nb0.Integral())
-# print("nb0 flashsim underflow", hist_flashsim_nb0.GetBinContent(0))
+legend4 = ROOT.TLegend(0.62, 0.70, 0.82, 0.88)
 
-# legend4.AddEntry(hist_flashsim_nb0, " flashsim", "l")
-
-# hist_phase2_nb0.Draw("HIST SAME")
-# hist_phase2_nb0.SetLineWidth(2)
-# hist_phase2_nb0.SetLineColor(ROOT.kBlack)
-# hist_phase2_nb0.Scale(1/hist_phase2_nb0.Integral())
-
-# legend4.AddEntry(hist_phase2_nb0, "phase2 fullsim", "l")
-# c4.SetLogy()
-
-# legend4.Draw()
-# print("nb0 phase2 underflow", hist_phase2_nb0.GetBinContent(0))
+hist_fullsim_nb0.Draw("HIST")
+hist_fullsim_nb0.SetTitle("Discriminator distribution for background, b = 0")
+hist_fullsim_nb0.SetLineWidth(2)
+hist_fullsim_nb0.SetLineColor(ROOT.kBlue +1)
+hist_fullsim_nb0.SetMinimum(1)
+hist_fullsim_nb0.Scale(1/hist_fullsim_nb0.Integral())
+legend4.AddEntry(hist_fullsim_nb0, "fullsim", "l")
+print("nb0 fullsim underflow", hist_fullsim_nb0.GetBinContent(0))
 
 
-# c5 = ROOT.TCanvas("c5", "Flashsim distribution", 800, 700)
+hist_flashsim_nb0.Draw("HIST SAME")
+hist_flashsim_nb0.SetLineWidth(2)
+hist_flashsim_nb0.SetLineColor(ROOT.kRed +1)
+hist_flashsim_nb0.Scale(1/hist_flashsim_nb0.Integral())
+print("nb0 flashsim underflow", hist_flashsim_nb0.GetBinContent(0))
+
+legend4.AddEntry(hist_flashsim_nb0, " flashsim", "l")
+
+hist_phase2_nb0.Draw("HIST SAME")
+hist_phase2_nb0.SetLineWidth(2)
+hist_phase2_nb0.SetLineColor(ROOT.kBlack)
+hist_phase2_nb0.Scale(1/hist_phase2_nb0.Integral())
+
+legend4.AddEntry(hist_phase2_nb0, " phase2 fullsim", "l")
+c4.SetLogy()
+
+legend4.Draw()
+print("nb0 phase2 underflow", hist_phase2_nb0.GetBinContent(0))
 
 
-# legend5 = ROOT.TLegend(0.62, 0.70, 0.82, 0.88)
-
-# hist_fullsim_nb1.Draw("HIST")
-# hist_fullsim_nb1.SetTitle("Discriminator distribution for signal, b = 1")
-# hist_fullsim_nb1.SetLineWidth(2)
-# hist_fullsim_nb1.SetLineColor(ROOT.kBlue +1)
-# hist_fullsim_nb1.SetMinimum(1)
-# #hist_fullsim_nb1.Scale(1/hist_fullsim_nb1.Integral())
-
-# legend5.AddEntry(hist_fullsim_nb1, "fullsim", "l")
-# print("nb1 fullsim underflow", hist_fullsim_nb1.GetBinContent(0))
+c5 = ROOT.TCanvas("c5", "Flashsim distribution", 800, 700)
 
 
-# hist_flashsim_nb1.Draw("HIST SAME")
-# hist_flashsim_nb1.SetLineWidth(2)
-# hist_flashsim_nb1.SetLineColor(ROOT.kRed +1)
-# #hist_flashsim_nb1.Scale(1/hist_flashsim_nb1.Integral())
+legend5 = ROOT.TLegend(0.62, 0.70, 0.82, 0.88)
 
-# legend5.AddEntry(hist_flashsim_nb1, " flashsim", "l")
-# print("nb1 flashsim underflow", hist_flashsim_nb1.GetBinContent(0))
+hist_fullsim_nb1.Draw("HIST")
+hist_fullsim_nb1.SetTitle("Discriminator distribution for signal, b = 1")
+hist_fullsim_nb1.SetLineWidth(2)
+hist_fullsim_nb1.SetLineColor(ROOT.kBlue +1)
+hist_fullsim_nb1.SetMinimum(1)
+hist_fullsim_nb1.SetMaximum(10e4)
+#hist_fullsim_nb1.Scale(1/hist_fullsim_nb1.Integral())
 
-
-# hist_phase2_nb1.Draw("HIST SAME")
-# hist_phase2_nb1.SetLineWidth(2)
-# hist_phase2_nb1.SetLineColor(ROOT.kBlack)
-# #hist_phase2_nb1.Scale(1/hist_phase2_nb1.Integral())
-
-# legend5.AddEntry(hist_phase2_nb1, " phase2 fullsim", "l")
-# c5.SetLogy()
-
-# legend5.Draw()
-# print("nb1 phase2 underflow", hist_phase2_nb1.GetBinContent(0))
+legend5.AddEntry(hist_fullsim_nb1, "fullsim", "l")
+print("nb1 fullsim underflow", hist_fullsim_nb1.GetBinContent(0))
 
 
-# c6 = ROOT.TCanvas("c6", "Flashsim distribution", 800, 700)
+hist_flashsim_nb1.Draw("HIST SAME")
+hist_flashsim_nb1.SetLineWidth(2)
+hist_flashsim_nb1.SetLineColor(ROOT.kRed +1)
+#hist_flashsim_nb1.Scale(1/hist_flashsim_nb1.Integral())
+
+legend5.AddEntry(hist_flashsim_nb1, " flashsim", "l")
+print("nb1 flashsim underflow", hist_flashsim_nb1.GetBinContent(0))
 
 
-# legend6 = ROOT.TLegend(0.62, 0.70, 0.82, 0.88)
+hist_phase2_nb1.Draw("HIST SAME")
+hist_phase2_nb1.SetLineWidth(2)
+hist_phase2_nb1.SetLineColor(ROOT.kBlack)
+#hist_phase2_nb1.Scale(1/hist_phase2_nb1.Integral())
 
-# hist_fullsim_nb2.Draw("HIST")
-# hist_fullsim_nb2.SetTitle("Discriminator distribution for signal, b = 2")
-# hist_fullsim_nb2.SetLineWidth(2)
-# hist_fullsim_nb2.SetMinimum(1)
-# hist_fullsim_nb2.SetLineColor(ROOT.kBlue +1)
-# #hist_fullsim_nb2.Scale(1/hist_fullsim_nb2.Integral())
+legend5.AddEntry(hist_phase2_nb1, " phase2 fullsim", "l")
+c5.SetLogy()
 
-# legend6.AddEntry(hist_fullsim_nb2, "fullsim", "l")
-
-# print("nb2 fullsim underflow", hist_fullsim_nb2.GetBinContent(0))
+legend5.Draw()
+print("nb1 phase2 underflow", hist_phase2_nb1.GetBinContent(0))
 
 
-# hist_flashsim_nb2.Draw("HIST SAME")
-# hist_flashsim_nb2.SetLineWidth(2)
-# hist_flashsim_nb2.SetLineColor(ROOT.kRed +1)
-# #hist_flashsim_nb2.Scale(1/hist_flashsim_nb2.Integral())
-
-# legend6.AddEntry(hist_flashsim_nb2, " flashsim", "l")
-
-# print("nb2 flashsim underflow", hist_flashsim_nb2.GetBinContent(0))
+c6 = ROOT.TCanvas("c6", "Flashsim distribution", 800, 700)
 
 
-# hist_phase2_nb2.Draw("HIST SAME")
-# hist_phase2_nb2.SetLineWidth(2)
-# hist_phase2_nb2.SetLineColor(ROOT.kBlack)
-# #hist_phase2_nb2.Scale(1/hist_phase2_nb2.Integral())
+legend6 = ROOT.TLegend(0.62, 0.70, 0.82, 0.88)
 
-# legend6.AddEntry(hist_phase2_nb2, " phase2 fullsim", "l")
-# c6.SetLogy()
+hist_fullsim_nb2.Draw("HIST")
+hist_fullsim_nb2.SetTitle("Discriminator distribution for signal, b = 2")
+hist_fullsim_nb2.SetLineWidth(2)
+hist_fullsim_nb2.SetMinimum(1)
+hist_fullsim_nb2.SetLineColor(ROOT.kBlue +1)
+#hist_fullsim_nb2.Scale(1/hist_fullsim_nb2.Integral())
 
-# legend6.Draw()
+legend6.AddEntry(hist_fullsim_nb2, "fullsim", "l")
+
+print("nb2 fullsim underflow", hist_fullsim_nb2.GetBinContent(0))
 
 
-# #c7 = ROOT.TCanvas("c7", "Flashsim distribution", 800, 700)
+hist_flashsim_nb2.Draw("HIST SAME")
+hist_flashsim_nb2.SetLineWidth(2)
+hist_flashsim_nb2.SetLineColor(ROOT.kRed +1)
+#hist_flashsim_nb2.Scale(1/hist_flashsim_nb2.Integral())
+
+legend6.AddEntry(hist_flashsim_nb2, " flashsim", "l")
+
+print("nb2 flashsim underflow", hist_flashsim_nb2.GetBinContent(0))
 
 
-# # h_delta['signal_full'].Draw("HIST")
-# # h_delta['signal_full'].SetTitle("Delta for fullsim")
-# # h_delta['signal_full'].SetLineWidth(2)
-# # h_delta['signal_full'].SetLineColor(ROOT.kBlue +1)
-# # h_delta['signal_full'].Draw()
+hist_phase2_nb2.Draw("HIST SAME")
+hist_phase2_nb2.SetLineWidth(2)
+hist_phase2_nb2.SetLineColor(ROOT.kBlack)
+#hist_phase2_nb2.Scale(1/hist_phase2_nb2.Integral())
+
+legend6.AddEntry(hist_phase2_nb2, " phase2 fullsim", "l")
+c6.SetLogy()
+
+legend6.Draw()
+
+
+
+# c7 = ROOT.TCanvas("c7", "Flashsim distribution", 800, 700)
+
+
+# h_delta['signal_full'].Draw("HIST")
+# h_delta['signal_full'].SetTitle("Delta for fullsim")
+# h_delta['signal_full'].SetLineWidth(2)
+# h_delta['signal_full'].SetLineColor(ROOT.kBlue +1)
+# h_delta['signal_full'].Draw()
 
 
 
@@ -660,107 +673,83 @@ for i in reversed(range(0, 100)):
 # print("efficiency on signal phase2", tp_per_ph2_nb2[87])
 
 
-#! 2b vs 0b
+# #! 2b vs 0b
 
-tp_per_full_nb2_wo_underflow = tp_per_full_nb2[:-2]
-tp_per_flash_nb2_wo_underflow = tp_per_flash_nb2[:-2]
-tp_per_ph2_nb2_wo_underflow = tp_per_ph2_nb2[:-2]
+# tp_per_full_nb2_wo_underflow = tp_per_full_nb2[:-2]
+# tp_per_flash_nb2_wo_underflow = tp_per_flash_nb2[:-2]
+# tp_per_ph2_nb2_wo_underflow = tp_per_ph2_nb2[:-2]
 
-tp_per_full_nb1_wo_underflow = tp_per_full_nb1[:-2]
-tp_per_flash_nb1_wo_underflow = tp_per_flash_nb1[:-2]
-tp_per_ph2_nb1_wo_underflow = tp_per_ph2_nb1[:-2]
+# tp_per_full_nb1_wo_underflow = tp_per_full_nb1[:-2]
+# tp_per_flash_nb1_wo_underflow = tp_per_flash_nb1[:-2]
+# tp_per_ph2_nb1_wo_underflow = tp_per_ph2_nb1[:-2]
 
-tp_per_full_nb0_wo_underflow = tp_per_full_nb0[:-2]
-tp_per_flash_nb0_wo_underflow = tp_per_flash_nb0[:-2]
-tp_per_ph2_nb0_wo_underflow = tp_per_ph2_nb0[:-2]
-
-bin_lower_wo_underflow = bin_lower[:-2]
-
-
-plt.plot(tp_per_full_nb2_wo_underflow, tp_per_full_nb0_wo_underflow, label = 'fullsim', color = 'seagreen', marker = '.', markersize=3 )
-plt.plot(tp_per_flash_nb2_wo_underflow, tp_per_flash_nb0_wo_underflow, label = 'flashsim', color = 'lightskyblue', marker = '.', markersize=3 )
-plt.plot(tp_per_ph2_nb2_wo_underflow, tp_per_ph2_nb0_wo_underflow, label = 'phase2', color = 'lightcoral', marker = '.', markersize=3 )
-plt.plot(tp_per_full_nb2_wo_underflow[87],  tp_per_full_nb0_wo_underflow[87], label= 'fullsim @ $T>0.86$', marker= 'D', color = 'darkgreen')
-plt.plot(tp_per_flash_nb2_wo_underflow[87], tp_per_flash_nb0_wo_underflow[87], label = 'flashim @ $T>0.86$', marker = 'D', color = 'mediumblue')
-plt.plot(tp_per_ph2_nb2_wo_underflow[87], tp_per_ph2_nb0_wo_underflow[87], label = 'ph2 @ $T>0.86$', marker = 'D', color = 'crimson')
-
-plt.legend()
-
-plt.xlabel('Efficiency distribution of the discriminator for 2b')
-plt.ylabel('Efficiency distribution of the discriminator for 0b')
-
-plt.show()
-plt.yscale('log')
-plt.savefig('2b_sig_vs_0b_bckg_new_n_events_eta_cut.png')
-
-plt.close()
+# tp_per_full_nb0_wo_underflow = tp_per_full_nb0[:-2]
+# tp_per_flash_nb0_wo_underflow = tp_per_flash_nb0[:-2]
+# tp_per_ph2_nb0_wo_underflow = tp_per_ph2_nb0[:-2]
 
 
 
-#! 2b vs 1b
+# plt.plot(tp_per_full_nb2_wo_underflow, tp_per_full_nb0_wo_underflow, label = 'fullsim', color = 'seagreen', marker = '.', markersize=3 )
+# plt.plot(tp_per_flash_nb2_wo_underflow, tp_per_flash_nb0_wo_underflow, label = 'flashsim', color = 'lightskyblue', marker = '.', markersize=3 )
+# plt.plot(tp_per_ph2_nb2_wo_underflow, tp_per_ph2_nb0_wo_underflow, label = 'phase2', color = 'lightcoral', marker = '.', markersize=3 )
+# plt.plot(tp_per_full_nb2_wo_underflow[87],  tp_per_full_nb0_wo_underflow[87], label= 'fullsim @ $T>0.86$', marker= 'D', color = 'darkgreen')
+# plt.plot(tp_per_flash_nb2_wo_underflow[87], tp_per_flash_nb0_wo_underflow[87], label = 'flashim @ $T>0.86$', marker = 'D', color = 'mediumblue')
+# plt.plot(tp_per_ph2_nb2_wo_underflow[87], tp_per_ph2_nb0_wo_underflow[87], label = 'ph2 @ $T>0.86$', marker = 'D', color = 'crimson')
 
-plt.plot(tp_per_full_nb2_wo_underflow, tp_per_full_nb1_wo_underflow, label = 'fullsim', color = 'seagreen', marker = '.', markersize=3 )
-plt.plot(tp_per_flash_nb2_wo_underflow, tp_per_flash_nb1_wo_underflow, label = 'flashsim', color = 'lightskyblue', marker = '.', markersize=3 )
-plt.plot(tp_per_ph2_nb2_wo_underflow, tp_per_ph2_nb1_wo_underflow, label = 'phase2', color = 'lightcoral', marker = '.', markersize=3 )
-plt.plot(tp_per_full_nb2_wo_underflow[87],  tp_per_full_nb1_wo_underflow[87], label= 'fullsim @ $T>0.86$', marker= 'D', color = 'darkgreen')
-plt.plot(tp_per_flash_nb2_wo_underflow[87], tp_per_flash_nb1_wo_underflow[87], label = 'flashim @ $T>0.86$', marker = 'D', color = 'mediumblue')
-plt.plot(tp_per_ph2_nb2_wo_underflow[87], tp_per_ph2_nb1_wo_underflow[87], label = 'ph2 @ $T>0.86$', marker = 'D', color = 'crimson')
+# plt.legend()
 
+# plt.xlabel('Efficiency distribution of the discriminator for 2b')
+# plt.ylabel('Efficiency distribution of the discriminator for 0b')
 
+# plt.show()
+# plt.yscale('log')
+# plt.savefig('2b_sig_vs_0b_bckg_new_column.png')
 
-plt.legend()
-
-plt.xlabel('Efficiency distribution of the discriminator for 2b')
-plt.ylabel('Efficiency distribution of the discriminator for 1b')
-
-plt.show()
-#plt.yscale('log')
-
-plt.savefig('2b_sig_vs_1b_sig_new_n_events_eta_cut.png')
-
-plt.close()
+# plt.close()
 
 
-#! 1b vs 0b
 
-plt.plot(tp_per_full_nb1, tp_per_full_nb0, label = 'fullsim', color = 'seagreen', marker = '.', markersize=3 )
-plt.plot(tp_per_flash_nb1, tp_per_flash_nb0, label = 'flashsim', color = 'lightskyblue', marker = '.', markersize=3 )
-plt.plot(tp_per_ph2_nb1, tp_per_ph2_nb0, label = 'phase2', color = 'lightcoral', marker = '.', markersize=3 )
+# #! 2b vs 1b
 
-plt.legend()
-
-plt.xlabel('Efficiency distribution of the discriminator for 1b')
-plt.ylabel('Efficiency distribution of the discriminator for 0b')
-
-plt.show()
-plt.yscale('log')
-
-plt.savefig('1b_sig_vs_0b_bckg_new_n_events_eta_cut.png')
-
-plt.close()
+# plt.plot(tp_per_full_nb2, tp_per_full_nb1, label = 'fullsim', color = 'seagreen', marker = '.', markersize=3 )
+# plt.plot(tp_per_flash_nb2, tp_per_flash_nb1, label = 'flashsim', color = 'lightskyblue', marker = '.', markersize=3 )
+# plt.plot(tp_per_ph2_nb2, tp_per_ph2_nb1, label = 'phase2', color = 'lightcoral', marker = '.', markersize=3 )
+# plt.plot(tp_per_full_nb2_wo_underflow[87],  tp_per_full_nb1_wo_underflow[87], label= 'fullsim @ $T>0.86$', marker= 'D', color = 'darkgreen')
+# plt.plot(tp_per_flash_nb2_wo_underflow[87], tp_per_flash_nb1_wo_underflow[87], label = 'flashim @ $T>0.86$', marker = 'D', color = 'mediumblue')
+# plt.plot(tp_per_ph2_nb2_wo_underflow[87], tp_per_ph2_nb1_wo_underflow[87], label = 'ph2 @ $T>0.86$', marker = 'D', color = 'crimson')
 
 
-# #! CDF
 
-plt.plot(bin_lower_wo_underflow, tp_per_full_nb2_wo_underflow, label = 'fullsim', color = 'seagreen', marker = '.', markersize=3 )
-plt.plot(bin_lower_wo_underflow, tp_per_flash_nb2_wo_underflow, label = 'flashsim', color = 'lightskyblue', marker = '.', markersize=3 )
-plt.plot(bin_lower_wo_underflow, tp_per_ph2_nb2_wo_underflow, label = 'phase 2', color = 'lightcoral', marker = '.', markersize=3 )
-plt.axhline(y = 0.85, color = 'r', linestyle = '-')
-plt.grid(which ='both')
+# plt.legend()
 
-plt.legend()
+# plt.xlabel('Efficiency distribution of the discriminator for 2b')
+# plt.ylabel('Efficiency distribution of the discriminator for 1b')
 
-plt.xlabel('Discriminator values')
-plt.ylabel('Signal efficiency')
+# plt.show()
+# #plt.yscale('log')
 
-plt.show()
-#plt.yscale('log')
+# plt.savefig('2b_sig_vs_1b_sig_new_column.png')
 
-plt.savefig('cdf_new_n_events.png')
+# plt.close()
 
-plt.close()
 
-# #! 
+# #! 1b vs 0b
+
+# plt.plot(tp_per_full_nb1, tp_per_full_nb0, label = 'fullsim', color = 'seagreen', marker = '.', markersize=3 )
+# plt.plot(tp_per_flash_nb1, tp_per_flash_nb0, label = 'flashsim', color = 'lightskyblue', marker = '.', markersize=3 )
+# plt.plot(tp_per_ph2_nb1, tp_per_ph2_nb0, label = 'phase2', color = 'lightcoral', marker = '.', markersize=3 )
+
+# plt.legend()
+
+# plt.xlabel('Efficiency distribution of the discriminator for 1b')
+# plt.ylabel('Efficiency distribution of the discriminator for 0b')
+
+# plt.show()
+# plt.yscale('log')
+
+# #plt.savefig('1b_sig_vs_0b_bckg.png')
+
+# plt.close()
 
 
 
@@ -770,8 +759,8 @@ plt.close()
 # c3.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/underflow_discr_distribution_phase2.pdf")
 
 #c4.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/test_discr_distribution_nb_0_sig.pdf")
-# c5.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/test_discr_distribution_nb_1_sig_w_new_column_no_norm.pdf")
-# c6.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/test_discr_distribution_nb_2_sig_w_new_column_no_norm.pdf")
+c5.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/test_ph2_w_flashsim_nb1_sig.pdf")
+c6.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/test_ph2_w_flashsim_nb2_sig.pdf")
 
 
 #c7.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/figures_master_thesis/test_Delta.pdf")
