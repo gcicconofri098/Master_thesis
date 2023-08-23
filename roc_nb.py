@@ -82,34 +82,86 @@ for i in processes:
 
     if str(i) == 'QCD6_flash' or str(i) == 'QCD7_flash' or str(i) == 'QCD8_flash' or str(i) == 'signal_flash': 
             
-    
-    
-        df[i] = (
+        print(f"number of events in dataset {i} is {df[i].Count().GetValue()}")
 
-            df[i].Define("Post_calibration_pt", "calibrate_pt(FatJet_eta, FatJet_pt)")
-        )
         df[i] = (df[i]
         .Define("matching_index" , "lepton_matching_index(FatJet_eta, FatJet_phi, GenJetAK8_eta, GenJetAK8_phi)")
+        .Define("Post_calibration_pt", "calibrate_pt(FatJet_eta, FatJet_pt)")
+
         .Define("Selection", "Post_calibration_pt> 300 && Post_calibration_pt< 500 && abs(FatJet_eta) < 1.5 && matching_index>=0")
-        .Define("Selected_jets", "Post_calibration_pt[Selection]")
+        .Define("Selected_jets", "Post_calibration_pt[Selection]")        
         )
-
         df[i] = df[i].Filter("!matching_index.empty()")
-
-    elif str(i) == 'QCD_ph2' or str(i) == 'sig_ph2':
-        df[i] = df[i].Define("Post_calibration_pt", "calibrate_pt(Mfatjet_eta, MgenjetAK8_pt)")
-        
-        df[i] = df[i].Define("Selection","Post_calibration_pt> 300 && Post_calibration_pt< 500 && abs(Mfatjet_eta) < 1.5&& new_index>=0")
-        df[i] = df[i].Filter("!new_index.empty()")
-
-    else: #fullsim
-
-
-        df[i] = df[i].Define("Selection", "FatJet_pt> 300 && FatJet_pt< 500 && abs(FatJet_eta) < 1.5 && FatJet_genJetAK8Idx>=0")
-        df[i] = df[i].Define("Selected_jets", "FatJet_pt[Selection]")
         df[i] = df[i].Filter("Selected_jets.size()!=0")
 
-        df[i] = df[i].Filter("!FatJet_genJetAK8Idx.empty()")
+        hist2 = df[i].Histo1D((str(i),str(i), 100, 0,800), "Selected_jets")
+        h2 = hist2.GetValue()
+        h2.Draw()
+        print(f"events in dataset {i} after fatjet_pt window is {df[i].Count().GetValue()}")
+
+
+
+    elif str(i) == 'QCD_ph2' or str(i) == 'sig_ph2':
+        print(f"number of events in dataset {i} is {df[i].Count().GetValue()}")
+        df[i] = df[i].Filter("Mfatjet_eta.size()>=2")
+
+        print(f"Events after nfatjet request in dataset {i} is {df[i].Count().GetValue()}")
+
+        df[i] = (df[i]
+                .Define("fatjets_selection_gen", "gen_jet_pt_checker(Mfatjet_pt, MgenjetAK8_pt, new_index)")
+                .Define("Selected_pt", "Mfatjet_pt[fatjets_selection_gen]")
+                .Define("Selected_eta", "Mfatjet_eta[fatjets_selection_gen]")
+                .Define("Selected_phi", "Mfatjet_phi[fatjets_selection_gen]")
+                .Define("new_matching_index", "new_index[fatjets_selection_gen]")
+                .Define("discriminator", "Mfatjet_particleNetMD_XbbvsQCD[fatjets_selection_gen]")
+        )
+        hist = df[i].Histo1D((str(i),str(i), 100, 0,800), "discriminator")
+        h = hist.GetValue()
+        h.Draw()
+        print(f"events in dataset {i} after request on gen_pt is {df[i].Count().GetValue()}")
+
+        df[i] = df[i].Define("Post_calibration_pt", "calibrate_pt(Selected_eta, MgenjetAK8_pt)")
+        
+        df[i] = df[i].Define("Selection","Post_calibration_pt> 300 && Post_calibration_pt< 500 && abs(Selected_eta) < 1.5 && new_matching_index>=0")
+        df[i] = df[i].Filter("!new_matching_index.empty()")
+
+    else: #fullsim
+        print(f"number of events in dataset {i} is {df[i].Count().GetValue()}")
+
+        df[i] = df[i].Filter("FatJet_pt.size()>=2")
+
+        print(f"Events after nfatjet request in dataset {i} is {df[i].Count().GetValue()}")
+
+
+        df[i] = (df[i]
+                .Define("fatjets_selection_gen", "gen_jet_pt_checker(FatJet_pt, GenJetAK8_pt, FatJet_genJetAK8Idx)")
+                .Define("Selected_pt", "FatJet_pt[fatjets_selection_gen]")
+                .Define("Selected_eta", "FatJet_eta[fatjets_selection_gen]")
+                .Define("Selected_phi", "FatJet_phi[fatjets_selection_gen]")
+                .Define("Selected_index", "FatJet_genJetAK8Idx[fatjets_selection_gen]")
+                .Define("Selected_nb_Hadrons", "FatJet_nBHadrons[fatjets_selection_gen]")
+                .Define("Discriminator_Xbb", "FatJet_particleNetMD_Xbb[fatjets_selection_gen]")
+                .Define("Discriminator_Xcc", "FatJet_particleNetMD_Xcc[fatjets_selection_gen]")
+                .Define("Discriminator_Xqq", "FatJet_particleNetMD_Xqq[fatjets_selection_gen]")
+                .Filter("Discriminator_Xqq.size()!=0")
+        )
+        hist1 = df[i].Histo1D((str(i),str(i), 100, 0,800), "Discriminator_Xqq")
+        h1 = hist1.GetValue()
+        h1.Draw()
+        print(f"events in dataset {i} after request on gen_pt is {df[i].Count().GetValue()}")
+        df[i] = df[i].Define("Selection", "Selected_pt> 300 && Selected_pt< 500 && abs(Selected_eta) < 1.5 && Selected_index>=0")
+        df[i] = df[i].Define("Selected_jets", "Selected_pt[Selection]")
+        df[i] = df[i].Filter("Selected_jets.size()!=0")
+
+        df[i] = df[i].Filter("!Selected_index.empty()")
+
+
+        hist4 = df[i].Histo1D((str(i),str(i), 100, 0,800), "Selected_jets")
+        h4 = hist4.GetValue()
+        h4.Draw()
+        print(f"events in dataset {i} after fatjet_pt window is {df[i].Count().GetValue()}")
+
+
 
 
 
@@ -128,19 +180,30 @@ for i in processes:
     elif str(i) == 'QCD_ph2' or str(i) == 'sig_ph2': 
 
         df[i]= (df[i]
-            .Define("new_discriminator", "Mfatjet_particleNetMD_XbbvsQCD[Selection]")
+            .Define("new_discriminator", "discriminator[Selection]")
     )
+        
+        df[i] = df[i].Filter("new_discriminator.size()!=0")
+
+        hist3 = df[i].Histo1D((str(i),str(i), 100, 0,800), "new_discriminator")
+        h3 = hist3.GetValue()
+        h3.Draw()
+        print(f"events in dataset {i} after fatjet_pt window is {df[i].Count().GetValue()}")
+
         
     else: #*fullsim
         df[i] = (
             df[i]
-            .Define("FatJet_eta_sel", "FatJet_eta[Selection]")
-            .Define("FatJet_phi_sel", "FatJet_phi[Selection]")
-            .Define("Discriminator_Xbb", "FatJet_particleNetMD_Xbb[Selection]")
-            .Define("Discriminator_Xcc", "FatJet_particleNetMD_Xcc[Selection]")
-            .Define("Discriminator_Xqq", "FatJet_particleNetMD_Xqq[Selection]")
-            .Define("new_discriminator", "Discriminator_Xbb/(1-Discriminator_Xcc - Discriminator_Xqq)")
+            .Define("FatJet_eta_sel", "Selected_eta[Selection]")
+            .Define("FatJet_phi_sel", "Selected_phi[Selection]")
+            .Define("New_Discriminator_Xbb", "Discriminator_Xbb[Selection]")
+            .Define("New_Discriminator_Xcc", "Discriminator_Xcc[Selection]")
+            .Define("New_Discriminator_Xqq", "Discriminator_Xqq[Selection]")
+            .Define("new_discriminator", "New_Discriminator_Xbb/(1-New_Discriminator_Xcc - New_Discriminator_Xqq)")
             )
+
+
+#TODO FROM HERE ON, DEFINITION OF THE NB VARIABLES IS MADE
 
     if str(i) !=  'sig_ph2' and str(i) != 'QCD_ph2':
 
@@ -170,14 +233,14 @@ for i in processes:
 
     elif str(i) == 'QCD_ph2' or str(i) == 'sig_ph2':
 
-        df[i] = df[i].Define("Matching_nb_flavour", "Take(MgenjetAK8_nbFlavour, new_index[Selection])")
+        df[i] = df[i].Define("Matching_nb_flavour", "Take(MgenjetAK8_nbFlavour, new_matching_index[Selection])")
 
 
 
     else: #* fullsim
         df[i] = (df[i].Define("MgenjetAK8_nbFlavour_manual", "count_nHadrons(GenPart_eta_good, GenPart_phi_good, GenJetAK8_eta, GenJetAK8_phi)")
-                 .Define("Matching_nb_flavour", "Take(MgenjetAK8_nbFlavour_manual, FatJet_genJetAK8Idx[Selection])")
-                .Define("Delta", "Matching_nb_flavour - FatJet_nBHadrons[Selection]")
+                 .Define("Matching_nb_flavour", "Take(MgenjetAK8_nbFlavour_manual, Selected_index[Selection])")
+                #.Define("Delta", "Matching_nb_flavour - FatJet_nBHadrons[Selection]")
         )
 
     df[i] = (
@@ -234,15 +297,15 @@ hist_fullsim_nb0.Add(h_nb0['QCD8_full'])
 
 hist_fullsim_nb0.ResetStats()
 
-# hist_fullsim_nb1 = h_nb1['QCD1_full'].Clone()
-# hist_fullsim_nb1.Add(h_nb1['QCD2_full'])
-# hist_fullsim_nb1.Add(h_nb1['QCD3_full'])
-# hist_fullsim_nb1.Add(h_nb1['QCD4_full'])
-# hist_fullsim_nb1.Add(h_nb1['QCD5_full'])
-# hist_fullsim_nb1.Add(h_nb1['QCD6_full'])
-# hist_fullsim_nb1.Add(h_nb1['QCD7_full'])
-# hist_fullsim_nb1.Add(h_nb1['QCD8_full'])
-hist_fullsim_nb1 =(h_nb1['signal_full']).Clone()
+hist_fullsim_nb1 = h_nb1['QCD1_full'].Clone()
+hist_fullsim_nb1.Add(h_nb1['QCD2_full'])
+hist_fullsim_nb1.Add(h_nb1['QCD3_full'])
+hist_fullsim_nb1.Add(h_nb1['QCD4_full'])
+hist_fullsim_nb1.Add(h_nb1['QCD5_full'])
+hist_fullsim_nb1.Add(h_nb1['QCD6_full'])
+hist_fullsim_nb1.Add(h_nb1['QCD7_full'])
+hist_fullsim_nb1.Add(h_nb1['QCD8_full'])
+#hist_fullsim_nb1 =(h_nb1['signal_full']).Clone()
 print("nb=1 fullsim entries", hist_fullsim_nb1.GetEntries() )
 
 hist_fullsim_nb1.ResetStats()
@@ -272,10 +335,10 @@ hist_flashsim_nb0.Add(h_nb0['QCD8_flash'])
 
 hist_flashsim_nb0.ResetStats()
 
-# hist_flashsim_nb1 = h_nb1['QCD6_flash'].Clone()
-# hist_flashsim_nb1.Add(h_nb1['QCD7_flash'])
-# hist_flashsim_nb1.Add(h_nb1['QCD8_flash'])
-hist_flashsim_nb1 =(h_nb1['signal_flash']).Clone()
+hist_flashsim_nb1 = h_nb1['QCD6_flash'].Clone()
+hist_flashsim_nb1.Add(h_nb1['QCD7_flash'])
+hist_flashsim_nb1.Add(h_nb1['QCD8_flash'])
+#hist_flashsim_nb1 =(h_nb1['signal_flash']).Clone()
 print("nb=1 flashsim entries", hist_flashsim_nb1.GetEntries() )
 
 
@@ -297,8 +360,8 @@ hist_phase2_nb0 = h_nb0['QCD_ph2'].Clone()
 #hist_phase2_nb0 = h_nb0['sig_ph2'].Clone()
 
 
-#hist_phase2_nb1 = h_nb1['QCD_ph2'].Clone()
-hist_phase2_nb1 = h_nb1['sig_ph2'].Clone()
+hist_phase2_nb1 = h_nb1['QCD_ph2'].Clone()
+#hist_phase2_nb1 = h_nb1['sig_ph2'].Clone()
 print("nb=1 phase2 entries", hist_phase2_nb1.GetEntries() )
 
 #hist_phase2_nb2 = h_nb2['QCD_ph2'].Clone()
@@ -691,7 +754,7 @@ plt.ylabel('Efficiency distribution of the discriminator for 0b')
 
 plt.show()
 plt.yscale('log')
-plt.savefig('2b_sig_vs_0b_bckg_new_n_events_eta_cut.png')
+plt.savefig('2b_sig_vs_0b_bckg_eta_cut_gen_sel.png')
 
 plt.close()
 
@@ -716,7 +779,7 @@ plt.ylabel('Efficiency distribution of the discriminator for 1b')
 plt.show()
 #plt.yscale('log')
 
-plt.savefig('2b_sig_vs_1b_sig_new_n_events_eta_cut.png')
+plt.savefig('2b_sig_vs_1b_bckg_eta_cut_gen_sel.png')
 
 plt.close()
 
@@ -735,7 +798,7 @@ plt.ylabel('Efficiency distribution of the discriminator for 0b')
 plt.show()
 plt.yscale('log')
 
-plt.savefig('1b_sig_vs_0b_bckg_new_n_events_eta_cut.png')
+plt.savefig('1b_bckg_vs_0b_bckg_eta_cut_gen_sel.png')
 
 plt.close()
 
@@ -756,7 +819,7 @@ plt.ylabel('Signal efficiency')
 plt.show()
 #plt.yscale('log')
 
-plt.savefig('cdf_new_n_events.png')
+plt.savefig('cdf_new_n_events_gen_sel.png')
 
 plt.close()
 

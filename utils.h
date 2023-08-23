@@ -148,4 +148,27 @@ ROOT::VecOps::RVec<bool>  part_isolation(ROOT::VecOps::RVec<float> &jet_eta, ROO
     return res;
 }
 
+ROOT::VecOps::RVec<bool> gen_jet_pt_checker(ROOT::VecOps::RVec<float> fatjet_pt, ROOT::VecOps::RVec<float> gen_pt,  ROOT::VecOps::RVec<int> matching_index) {
+
+    int n_fatjets = fatjet_pt.size();
+    int n_genjets = gen_pt.size();
+
+    ROOT::VecOps::RVec<bool> res (n_fatjets);
+
+    for(int i =0;i<n_fatjets;i++){
+        int current_index = matching_index[i];
+        if(current_index == -1)
+            res[i] = false;
+        else{
+            if(gen_pt[current_index]>=250)
+            res[i] = true;
+            else
+            res[i] = false;
+        }
+    }
+    return res;
+}
+
+
+
 #endif
