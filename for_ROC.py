@@ -71,17 +71,17 @@ for i in processes:
 
     new_weights[i] = weights[i] / dataset_events[i]
 
-    df[i] = (
-        df[i]
-        .Filter("HLT_PFJet500")
-        .Filter("HLT_PFHT1050")
-        .Filter("HLT_AK8PFJet360_TrimMass30")
-        .Filter("HLT_AK8PFJet380_TrimMass30")
-        .Filter("HLT_AK8PFJet400_TrimMass30")
-        .Filter("HLT_AK8PFHT800_TrimMass50")
-        .Filter("HLT_AK8PFHT750_TrimMass50")
-        .Filter("HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p17")
-    )
+    # df[i] = (
+    #     df[i]
+    #     .Filter("HLT_PFJet500")
+    #     .Filter("HLT_PFHT1050")
+    #     .Filter("HLT_AK8PFJet360_TrimMass30")
+    #     .Filter("HLT_AK8PFJet380_TrimMass30")
+    #     .Filter("HLT_AK8PFJet400_TrimMass30")
+    #     .Filter("HLT_AK8PFHT800_TrimMass50")
+    #     .Filter("HLT_AK8PFHT750_TrimMass50")
+    #     .Filter("HLT_AK8PFJet330_TrimMass30_PFAK8BTagDeepCSV_p17")
+    # )
 
     df[i] = df[i].Filter("nFatJet>=2")
 
@@ -168,8 +168,8 @@ bg_efficiency = 1 - rejection
 
 print("finished working on the macro")
 
-np.savetxt("efficiency.txt", efficiency)
-np.savetxt("rejection.txt", rejection)
+np.savetxt("efficiency_test.txt", efficiency)
+np.savetxt("rejection_test.txt", rejection)
 
 
 print("written on txt")

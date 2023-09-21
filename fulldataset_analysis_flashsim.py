@@ -29,7 +29,7 @@ rejection = 0
 qcd_post_sel_weighted = 0
 
 temp = 0
-
+events_flashsim = {}
 weights = {
 
     "QCD6": 1207 * integrated_luminosity,
@@ -53,7 +53,8 @@ files = {
 }
 
 processes = list(files.keys())
-
+events_chain = {}
+full_chain = {}
 #processes = ['signal']
 
 for i in processes:
@@ -61,12 +62,18 @@ for i in processes:
     num = len(f)
     print(num)
     entries1[i] = []
+    print("creating the TChains")
+    events_chain[i] = ROOT.TChain("Events")
+    full_chain[i] = ROOT.TChain("FullSim")
+    print("adding files to the TChains")
 
     for j in range(0, num):
         entries1[i].append(str(files.get(i)) + str(f[j]))
+        events_chain[i].Add(str(files.get(i)) + str(f[j]))
+        full_chain[i].Add(str(files.get(i)) + str(f[j]))
+        events_chain[i].AddFriend(full_chain[i])
 
-    df[i] = ROOT.RDataFrame("Events", entries1[i])
-
+        df[i] = ROOT.RDataFrame(events_chain[i])
     print("added file to: {}".format(i))
 
 
@@ -84,10 +91,11 @@ total_post_sel_weighted = 0
 
 for i in processes:
     print("Begin selection: {}".format(i))
+    events_flashsim[i] = df[i].Count().GetValue()
+    new_weights[i] = weights[i]/events_flashsim[i]
+    #new_weights[i] = weights[i]/dataset_events[i]
+    print(new_weights[i])
 
-    new_weights[i] = weights[i]/dataset_events[i]
-
-    df[i] = df[i].Filter("nFatJet>=2")
 
     df[i] = (
         df[i]
@@ -96,7 +104,7 @@ for i in processes:
         .Define(
             # mu = 13, e = 11
             "FatJet_Selection",
-            "Post_calibration_pt > 300 && abs(FatJet_eta) < 2.4 && fatjet_lepton_isolation(FatJet_eta, FatJet_phi, Electron_pt, Electron_eta, Electron_phi, Electron_pfRelIso03_all, 11)  && fatjet_lepton_isolation(FatJet_eta, FatJet_phi, Muon_pt, Muon_eta, Muon_phi, Muon_pfRelIso03_all, 13)",
+            "Post_calibration_pt > 300 && Post_calibration_pt < 500 && abs(FatJet_eta) < 1.5 && fatjet_lepton_isolation(FatJet_eta, FatJet_phi, Electron_pt, Electron_eta, Electron_phi, Electron_pfRelIso03_all, 11)  && fatjet_lepton_isolation(FatJet_eta, FatJet_phi, Muon_pt, Muon_eta, Muon_phi, Muon_pfRelIso03_all, 13)",
         )
         .Define("Softdrop_sel_jets", "FatJet_msoftdrop[FatJet_Selection]")
         # .Define("Discriminator_Xbb", "FatJet_particleNetMD_Xbb[FatJet_Selection]")
@@ -145,47 +153,58 @@ for i in processes:
 
     )
     #print("count postpreselection, no veto, no MET: ",df[i].Count().GetValue())
+    preselection_events = df[i].Count().GetValue()
+    print("pre", preselection_events)
+    df[i] = df[i].Filter("new_discriminator[Jet1_index]>0.92")# && new_discriminator[1]>0.83")
+    #df[i] = df[i].Filter("MET_pt <100")
+    postselection_events = df[i].Count().GetValue()
+    print("post", postselection_events)
 
-    df[i] = df[i].Filter("new_discriminator[Jet1_index]>0.83")
-    df[i] = df[i].Filter("MET_pt <100")
+    if str(i) == 'signal':
+        print(f"signal efficiency is {postselection_events/preselection_events}")
+    if str(i)!= 'signal':
+        print(f"background rejection is {(preselection_events - postselection_events)/preselection_events}")
+
+
+
     #print("count postpreselection, no veto: ",df[i].Count().GetValue())
 
 
 
-    if  (str(i) != 'QCD1') and (str(i) != 'QCD2') and (str(i) != 'QCD3') and (str(i) != 'QCD4') and (str(i) != 'QCD5') and (str(i) != 'QCD6') and (str(i) != 'QCD7') and (str(i) != 'QCD8'):
-        #df[i] = df[i].Filter("new_discriminator[Jet1_index] > 0.996 && new_discriminator[Jet2_index] >0.98")
-        df[i] = df[i].Filter("Jet1_Selected_jet_softdrop > 115 && Jet1_Selected_jet_softdrop < 145").Filter("Jet2_Selected_jet_softdrop > 115 && Jet2_Selected_jet_softdrop < 145")
+    # if  (str(i) != 'QCD1') and (str(i) != 'QCD2') and (str(i) != 'QCD3') and (str(i) != 'QCD4') and (str(i) != 'QCD5') and (str(i) != 'QCD6') and (str(i) != 'QCD7') and (str(i) != 'QCD8'):
+    #     #df[i] = df[i].Filter("new_discriminator[Jet1_index] > 0.996 && new_discriminator[Jet2_index] >0.98")
+    #     df[i] = df[i].Filter("Jet1_Selected_jet_softdrop > 115 && Jet1_Selected_jet_softdrop < 145").Filter("Jet2_Selected_jet_softdrop > 115 && Jet2_Selected_jet_softdrop < 145")
 
-    print("count postpreselection with veto and mass window: ",df[i].Count().GetValue())
+    #print("count postpreselection with veto and mass window: ",df[i].Count().GetValue())
 
 
-    if str(i) != "signal":
-        post_selection_background = df[i].Count().GetValue()
+    # if str(i) != "signal":
+    #     post_selection_background = df[i].Count().GetValue()
         
-        print("post preselection background (non cumulative) for {}: {}".format(i, post_selection_background))
+    #     print("post preselection background (non cumulative) for {}: {}".format(i, post_selection_background))
         
-        total_events_post = total_events_post + post_selection_background
-        print("total post selection",total_events_post)
+    #     total_events_post = total_events_post + post_selection_background
+    #     print("total post selection",total_events_post)
 
-        percentage = post_selection_background/dataset_events[i]
-        print("percentage of {} that passes selection: {}".format(i, percentage))
+    #     percentage = post_selection_background/dataset_events[i]
+    #     print("percentage of {} that passes selection: {}".format(i, percentage))
 
-        weighted_post_selection = post_selection_background*new_weights[i]
-        print("total weighted post selection background:" , weighted_post_selection)
+    #     weighted_post_selection = post_selection_background*new_weights[i]
+    #     print("total weighted post selection background:" , weighted_post_selection)
 
     
-    #print("finished jets selection for dataset: {}".format(i))
-    if  (str(i) != 'QCD1') and (str(i) != 'QCD2') and (str(i) != 'QCD3') and (str(i) != 'QCD4') and (str(i) != 'QCD5') and (str(i) != 'QCD6') and (str(i) != 'QCD7') and (str(i) != 'QCD8') and (str(i) != 'signal') :
+    # #print("finished jets selection for dataset: {}".format(i))
+    # if  (str(i) != 'QCD1') and (str(i) != 'QCD2') and (str(i) != 'QCD3') and (str(i) != 'QCD4') and (str(i) != 'QCD5') and (str(i) != 'QCD6') and (str(i) != 'QCD7') and (str(i) != 'QCD8') and (str(i) != 'signal') :
 
-        total_post_sel_weighted = total_post_sel_weighted + df[i].Count().GetValue() * new_weights[i]
+    #     total_post_sel_weighted = total_post_sel_weighted + df[i].Count().GetValue() * new_weights[i]
 
-    elif (str(i) == 'signal'):
-        post_selection_signal = df[i].Count().GetValue() * new_weights[i]
-        print("percentage: ", df[i].Count().GetValue()/dataset_events[i])
-        print("post preselection signal: ", post_selection_signal)
+    # elif (str(i) == 'signal'):
+    #     post_selection_signal = df[i].Count().GetValue() * new_weights[i]
+    #     print("percentage: ", df[i].Count().GetValue()/dataset_events[i])
+    #     print("post preselection signal: ", post_selection_signal)
 
-    else:
-        qcd_post_sel_weighted = qcd_post_sel_weighted + df[i].Count().GetValue() * new_weights[i]
+    # else:
+    #     qcd_post_sel_weighted = qcd_post_sel_weighted + df[i].Count().GetValue() * new_weights[i]
 
 #* coefficienti per la QCD sono 0.4 per flashsim e 0.35 per fullsim
 
@@ -227,7 +246,7 @@ for i in processes:
     # )
 
     histo2d[i] = df[i].Histo2D(
-        ("Jet1 vs Jet2", "Jet1 vs Jet2; Jet1; Jet2", 10, 0.8, 1, 10, 0.8, 1),
+        ("Jet1 vs Jet2", "Jet1 vs Jet2; Jet1; Jet2", 20, 0.7, 1, 20, 0.6, 1),
         "Jet1_Selected_jets_discriminator",
         "Jet2_Selected_jets_discriminator",
     )
@@ -240,22 +259,22 @@ for i in processes:
 
     print("created histograms for: {}".format(i))
 
-    # h1[i] = hist1[i].GetValue()
+    h1[i] = hist1[i].GetValue()
 
-    # #     if str(i) != "signal":
-    # #         jet1_bckg = jet1_bckg + h1[i].GetEntries() * new_weights[i]
+    #     if str(i) != "signal":
+    #         jet1_bckg = jet1_bckg + h1[i].GetEntries() * new_weights[i]
 
-    # h1[i].Scale(1 / dataset_events[i])
+    h1[i].Scale(1 / events_flashsim[i])
 
-    # h2[i] = hist2[i].GetValue()
-    # h2[i].Scale(1 / dataset_events[i])
+    h2[i] = hist2[i].GetValue()
+    h2[i].Scale(1 / events_flashsim[i])
 
     h2_2[i] = histo2d[i].GetValue()
-    h2_2[i].Scale(1/dataset_events[i])
+    h2_2[i].Scale(1/events_flashsim[i])
 
 
 #     # h_tot[i] = hist_tot[i].GetValue()
-#     # h_tot[i].Scale(1 / dataset_events[i])
+#     # h_tot[i].Scale(1 / events_flashsim[i])
 
     print("got values for histograms of: {}".format(i))
 
@@ -264,12 +283,12 @@ for i in processes:
 
 
 
-output_file = ROOT.TFile.Open("histograms_for_analysis_flashsim_discr_pres_0_83.root", "RECREATE")
+output_file = ROOT.TFile.Open("histograms_for_analysis_flashsim_discr_pres_0_89.root", "RECREATE")
 
 
 for i in processes:
-    # output_file.WriteObject(h1[i], "h1_" + str(i))
-    # output_file.WriteObject(h2[i], "h2_" + str(i))
+    output_file.WriteObject(h1[i], "h1_" + str(i))
+    output_file.WriteObject(h2[i], "h2_" + str(i))
     # output_file.WriteObject(h_tot[i], "h_tot" + str(i))
     output_file.WriteObject(h2_2[i], "h2_2_" + str(i))
 

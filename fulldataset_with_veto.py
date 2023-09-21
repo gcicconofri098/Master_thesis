@@ -2,6 +2,7 @@ import ROOT
 import os
 import numpy as np
 
+
 module_path = os.path.join(os.path.dirname(__file__), "utils.h")
 module_path_3 = os.path.join(os.path.dirname(__file__), "utils_calibration.h")
 
@@ -96,8 +97,8 @@ files = {
     "signal": "/scratchnvme/cicco/signal_RunIISummer20UL16/",
 }
 
-#processes = list(files.keys())
-processes = ['QCD6', 'QCD7', 'QCD8', 'signal']
+processes = list(files.keys())
+#processes = ['QCD6', 'QCD7', 'QCD8', 'signal']
 
 #processes = ['signal']
 
@@ -132,24 +133,26 @@ total_post_sel_weighted = 0
 for i in processes:
     print("Begin selection: {}".format(i))
     dataset_events[i] = df[i].Count().GetValue()
-    print("events in dataset {}: {}".format(i, dataset_events[i]))
+    #print("events in dataset {}: {}".format(i, dataset_events[i]))
     if str(i) != 'signal':
         total_events = total_events + dataset_events[i]
-        print("total",total_events)
+        #print("total",total_events)
     #new_weights[i] = weights[i] / 540000
-    #print("preselection events in dataset {}: {}".format(i, dataset_events[i]*new_weights[i]))
+    print("preselection events in dataset {}: {}".format(i, dataset_events[i]))
     #print(new_weights[i])
 
     df[i] = df[i].Filter("nFatJet>=2")
 
+    print(f"Dataset {i} has {df[i].Count().GetValue()} events before cleaning (nfatjets>=2 is the only request applied)")
+
+
     df[i] = (
         df[i]
-        .Define("Post_calibration_pt", "calibrate_pt(FatJet_eta, FatJet_pt)")
+        #.Define("Post_calibration", "calibrate_pt(FatJet_eta, FatJet_pt)")
 
         .Define(
             # mu = 13, e = 11
-            "FatJet_Selection",
-            "Post_calibration_pt > 300 && abs(FatJet_eta) < 2.4 && fatjet_lepton_isolation(FatJet_eta, FatJet_phi, Electron_pt, Electron_eta, Electron_phi, Electron_pfRelIso03_all, 11)  && fatjet_lepton_isolation(FatJet_eta, FatJet_phi, Muon_pt, Muon_eta, Muon_phi, Muon_pfRelIso03_all, 13)",
+            "FatJet_Selection", "fatjet_lepton_isolation(FatJet_eta, FatJet_phi, Electron_pt, Electron_eta, Electron_phi, Electron_pfRelIso03_all, 11)  && fatjet_lepton_isolation(FatJet_eta, FatJet_phi, Muon_pt, Muon_eta, Muon_phi, Muon_pfRelIso03_all, 13)" # && FatJet_pt > 300 && abs(FatJet_eta) < 2.4",
         )
         .Define("Softdrop_sel_jets", "FatJet_msoftdrop[FatJet_Selection]")
         .Define("Discriminator_Xbb", "FatJet_particleNetMD_Xbb[FatJet_Selection]")
@@ -159,8 +162,10 @@ for i in processes:
         #.Define("new_discriminator", "FatJet_particleNetMD_XbbvsQCD[FatJet_Selection]")
         .Define("Eta_sel_jets", "FatJet_eta[FatJet_Selection]")
         .Define("Phi_sel_jets", "FatJet_phi[FatJet_Selection]")
-        .Define("Pt_sel_jets", "Post_calibration_pt[FatJet_Selection]")
+        .Define("Pt_sel_jets", "FatJet_pt[FatJet_Selection]")
     )
+    df[i] = df[i].Filter("Pt_sel_jets.size()!=0")
+    print(f"Dataset {i} has {df[i].Count().GetValue()} events after cleaning (nfatjets>=2 is the only request applied)")
     df[i] = df[i].Filter("new_discriminator.size()>=2")
 
     df[i] = (
