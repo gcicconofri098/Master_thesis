@@ -15,7 +15,7 @@ pre_selection_signal = 0
 pre_selection_background = 0
 post_selection_background = np.array([])
 
-tagger = np.linspace(0.7, 1, 20)
+tagger = np.linspace(0., 1, 99)
 print(tagger)
 efficiency = np.array([])
 post_selection_signal = np.array([])
@@ -44,12 +44,12 @@ files = {
     "QCD6": "/scratchnvme/cicco/QCD6/",
     "QCD7": "/scratchnvme/cicco/QCD7/",
     "QCD8": "/scratchnvme/cicco/QCD8/",
-    "signal": "/scratchnvme/cicco/signal/",
+    "signal": "/scratchnvme/cicco/signal_RunIISummer20UL16/",
 }
 
 
-processes = list(files.keys())
-
+#processes = list(files.keys())
+processes  = ['signal']
 for i in processes:
     f = os.listdir(files.get(i))
     num = len(f)
@@ -68,7 +68,7 @@ new_weights = {}
 for i in processes:
     print("Begin selection: {}".format(i))
     dataset_events[i] = df[i].Count().GetValue()
-
+    print("n_event", dataset_events[i])
     new_weights[i] = weights[i] / dataset_events[i]
 
     # df[i] = (
@@ -92,7 +92,7 @@ for i in processes:
             "FatJet_pt > 300 && abs(FatJet_eta) < 2.4",  # && 80 <FatJet_msoftdrop && FatJet_msoftdrop<170 ",
         )
         .Define("Softdrop_sel_jets", "FatJet_msoftdrop[Events_Selection]")
-        .Define("Discriminator_sel_jets", "FatJet_deepTagMD_HbbvsQCD[Events_Selection]")
+        .Define("Discriminator_sel_jets", "FatJet_particleNet_HbbvsQCD[Events_Selection]")
     )
 
     df[i] = df[i].Filter("Discriminator_sel_jets.size()>=2")
@@ -116,7 +116,7 @@ for i in processes:
         )
         print("preselection background: ", pre_selection_background)
     else:
-        pre_selection_signal = df[i].Count().GetValue() * new_weights[i]
+        pre_selection_signal = df[i].Count().GetValue() #* new_weights[i]
         print("preselection signal: ", pre_selection_signal)
 
 
@@ -136,13 +136,13 @@ for j in range(len(tagger)):
                 .Filter("Discriminator_sel_jets[Jet1_index]>" + str(tagger[j]))
                 .Count()
                 .GetValue()
-                * new_weights[i]
+                # * new_weights[i]
             )
 
     post_selection_signal = np.append(post_selection_signal, temp_sig)
     # print("postselection signal: ", temp_sig)
 
-    post_selection_background = np.append(post_selection_background, temp)
+#    post_selection_background = np.append(post_selection_background, temp)
     # print("postselection backgrond: ", temp)
 
     print("Finished value of the cut: {}".format(tagger[j]))
@@ -150,26 +150,27 @@ for j in range(len(tagger)):
     efficiency = np.append(
         efficiency, (post_selection_signal[j] / pre_selection_signal)
     )
+print("preselection signal", pre_selection_signal)
+print("post selection signal", post_selection_signal)
+print("efficiency", efficiency)
 
-    print("efficiency", efficiency)
+#     rejection = np.append(
+#         rejection,
+#         (
+#             (pre_selection_background - post_selection_background[j])
+#             / pre_selection_background
+#         ),
+#     )
+#     print("background rejection", rejection)
+#     temp = 0
+# print("finished creating the arrays")
 
-    rejection = np.append(
-        rejection,
-        (
-            (pre_selection_background - post_selection_background[j])
-            / pre_selection_background
-        ),
-    )
-    print("background rejection", rejection)
-    temp = 0
-print("finished creating the arrays")
+# bg_efficiency = 1 - rejection
 
-bg_efficiency = 1 - rejection
+# print("finished working on the macro")
 
-print("finished working on the macro")
-
-np.savetxt("efficiency_test.txt", efficiency)
-np.savetxt("rejection_test.txt", rejection)
+# np.savetxt("efficiency_test.txt", efficiency)
+# np.savetxt("rejection_test.txt", rejection)
 
 
-print("written on txt")
+# print("written on txt")

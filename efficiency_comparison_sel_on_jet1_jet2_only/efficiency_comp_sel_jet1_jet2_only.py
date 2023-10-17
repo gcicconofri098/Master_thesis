@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 
 ROOT.EnableImplicitMT()
 
-module_path = os.path.join(os.path.dirname(__file__), "utils.h")
-module_path2 = os.path.join(os.path.dirname(__file__), "nb.h")
-module_path_3 = os.path.join(os.path.dirname(__file__), "utils_calibration.h")
+module_path = os.path.join(os.path.dirname(__file__), "/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/utils.h")
+module_path2 = os.path.join(os.path.dirname(__file__), "/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/nb.h")
+module_path_3 = os.path.join(os.path.dirname(__file__), "/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/utils_calibration.h")
 
 
 #plt.rcParams['text.usetex'] = True
@@ -115,9 +115,9 @@ n_events = {
 
 
 
-processes = list(files.keys())
+#processes = list(files.keys())
 #processes = ['QCD6_flash','QCD7_flash','QCD8_flash','signal_flash']
-#processes = ['signal_full', 'signal_flash']# 'signal_ph2']
+processes = ['signal_full', 'signal_flash']# 'signal_ph2']
 for i in processes:
     if str(i) != 'signal_ph2' and str(i)!= 'QCD_ph2':
         f = os.listdir(files.get(i))
@@ -172,107 +172,53 @@ for i in processes:
         .Define("Post_calibration_pt", "calibrate_pt_double_n_bins(FatJet_eta, FatJet_pt)")
         .Define("HbbvsQCD_discriminator_lower_limited", "Where(FatJet_particleNetMD_XbbvsQCD>=0,  FatJet_particleNetMD_XbbvsQCD, 0)")
         .Define("HbbvsQCD_discriminator_limited", "Where(HbbvsQCD_discriminator_lower_limited<1, HbbvsQCD_discriminator_lower_limited, 0.9995) ")
+        .Define("sorted_FatJet_particleNetMD_XbbvsQCD", "Reverse(Argsort(HbbvsQCD_discriminator_limited))")
+        .Define("Jet1_index", "sorted_FatJet_particleNetMD_XbbvsQCD[0]")
+        .Define("Jet2_index", "sorted_FatJet_particleNetMD_XbbvsQCD[1]")
         )
-        df[i] = (df[i]
-        .Define("Selection_pt", "Post_calibration_pt> 300")
+        df[i] = df[i].Filter("Post_calibration_pt[Jet1_index]> 300 && Post_calibration_pt[Jet2_index]>300", "events after fatjet request on jet1 and jet2")
         
-        .Define("new_discriminator", "HbbvsQCD_discriminator_limited[Selection_pt]")
-        .Define("FatJet_eta_sel", "FatJet_eta[Selection_pt]")
-        .Define("FatJet_phi_sel", "FatJet_phi[Selection_pt]")
-        .Define("Softdrop_sel_jets", "FatJet_msoftdrop[Selection_pt]")
-        .Define("Selected_pt", "Post_calibration_pt[Selection_pt]")
-        )
+        df[i] = df[i].Filter("abs(FatJet_eta[Jet1_index]) < 2.4 && abs(FatJet_eta[Jet2_index]) < 2.4", "events after eta req on jet1 and jet2")
 
-        df[i] = df[i].Filter("Selected_pt.size()>=2", "events after request on fat_pt")
-
-        df[i] = df[i].Define("Second_selection", "abs(FatJet_eta_sel) < 2.4")
-
-        df[i] = df[i].Define("Second_selection_eta", "FatJet_eta_sel[Second_selection]")
-        df[i] = df[i].Define("Second_selection_discriminator", "new_discriminator[Second_selection]")
-        df[i] = df[i].Define("Second_selection_mass", "Softdrop_sel_jets[Second_selection]")
-
-        
-        df[i] = df[i].Filter("Second_selection_mass.size()>=2", "events after request on fat eta")
-
-        df[i] = (
-            df[i]
-            .Define(
-            "sorted_FatJet_deepTagMD_HbbvsQCD",
-            "Reverse(Argsort(Second_selection_discriminator))",
-        )
-            .Define("Jet1_index", "sorted_FatJet_deepTagMD_HbbvsQCD[0]")
-            .Define("Jet2_index", "sorted_FatJet_deepTagMD_HbbvsQCD[1]")
-        )
         df[i] = df[i].Filter(
         "Second_selection_mass[Jet1_index]> 40 && Second_selection_mass[Jet2_index]> 40", "events after mass req"
         )
+    
+        df[i] = df[i].Filter("FatJet_msoftdrop[Jet1_index]>115 && FatJet_msoftdrop[Jet1_index]<145 && FatJet_msoftdrop[Jet2_index] >115 && FatJet_msoftdrop[Jet2_index] <145", "events after mass window")
 
-        df[i] = (df[i]
-                .Define("jet1_discr", "new_discriminator[Jet1_index]")
-                .Define("jet1_softdrop", "Second_selection_mass[Jet1_index]")
-                .Define("jet2_discr", "new_discriminator[Jet2_index]")
-                .Define("jet2_softdrop", "Second_selection_mass[Jet2_index]")
 
-        )
-        df[i] = df[i].Filter("jet1_softdrop>115 && jet1_softdrop<145 && jet2_softdrop >115 && jet2_softdrop <145", "events after mass window")
-
-       
 
     else: #*fullsim
+
         print(f"number of events in dataset {i} is {df[i].Count().GetValue()}")
 
 
-        df[i] = df[i].Filter("GenJetAK8_pt[0]>250 && GenJetAK8_pt[1]>250", "number of events after gen_pt")
+        df[i] = df[i].Filter("GenJetAK8_pt[0]>=250 && GenJetAK8_pt[1]>=250", "number of events after gen_pt")
 
         df[i] = df[i].Filter("FatJet_pt.size()>=2", "number of events after nfatjets>=2")
 
-        df[i] = df[i].Define("Selection_pt", "FatJet_pt> 300")
-
-        df[i] = (df[i]
-            .Define("Selected_pt", "FatJet_pt[Selection_pt]")
-            .Define("Selected_mass", "FatJet_msoftdrop[Selection_pt]")
-            .Define("Selected_eta", "FatJet_eta[Selection_pt]")
-            .Define("Discriminator_Xbb", "FatJet_particleNetMD_Xbb[Selection_pt]")
-            .Define("Discriminator_Xcc", "FatJet_particleNetMD_Xcc[Selection_pt]")
-            .Define("Discriminator_Xqq", "FatJet_particleNetMD_Xqq[Selection_pt]")
-            .Define("new_discriminator", "Discriminator_Xbb/(1-Discriminator_Xcc - Discriminator_Xqq)")        
-
-        )
-        df[i] = df[i].Filter("Selected_pt.size()>=2", "number of events after pt selection")
-        
-        df[i] = df[i].Define("Second_selection", "abs(Selected_eta)<2.4")
-
-        df[i] = (df[i]
-            .Define("Second_selection_discriminator", "new_discriminator[Second_selection]")
-            .Define("Second_selection_mass", "Selected_mass[Second_selection]")
-            .Define("Second_selection_pt", "Selected_pt[Second_selection]")
-        )
-
-        df[i] = df[i].Filter("Second_selection_discriminator.size()>=2", "events after request on fat_eta")
+        df[i] =df[i].Define("new_discriminator", "FatJet_particleNetMD_Xbb/(1-FatJet_particleNetMD_Xcc - FatJet_particleNetMD_Xqq)")
 
         df[i] = (
             df[i]
             .Define(
             "sorted_FatJet_deepTagMD_HbbvsQCD",
-            "Reverse(Argsort(Second_selection_discriminator))")
+            "Reverse(Argsort(new_discriminator))")
         )
 
         df[i] = (df[i]
             .Define("Jet1_index", "sorted_FatJet_deepTagMD_HbbvsQCD[0]")
             .Define("Jet2_index", "sorted_FatJet_deepTagMD_HbbvsQCD[1]")
         )
-        df[i] = df[i].Filter(
-        "Second_selection_mass[Jet1_index]> 40 && Second_selection_mass[Jet2_index]> 40",  "events after mass req"
-        )           
-        df[i] = (df[i]
-        .Define("jet1_discr", "Second_selection_discriminator[Jet1_index]")
-        .Define("jet2_discr", "Second_selection_discriminator[Jet2_index]")
 
-        .Define("jet1_softdrop", "Second_selection_mass[Jet1_index]")
-        .Define("jet2_softdrop", "Second_selection_mass[Jet2_index]")
-        )
+        df[i] = df[i].Filter("FatJet_pt[Jet1_index]> 300 && FatJet_pt[Jet2_index]>300", "events after fatjet req on jet1 and jet2")
 
-        df[i] = df[i].Filter("jet1_softdrop>115 && jet1_softdrop<145 && jet2_softdrop >115 && jet2_softdrop <145", "events after mass window")
+        
+        df[i] = df[i].Filter("abs(FatJet_eta[Jet1_index])<2.4 && abs(FatJet_eta[Jet2_index])<2.4", "events after eta req on jet1 and jet2")
+
+        df[i] = df[i].Filter("FatJet_msoftdrop[Jet1_index]> 40 && FatJet_msoftdrop[Jet2_index]> 40",  "events after mass req")           
+
+        df[i] = df[i].Filter("FatJet_msoftdrop[Jet1_index]>115 && FatJet_msoftdrop[Jet1_index]<145 && FatJet_msoftdrop[Jet2_index] >115 && FatJet_msoftdrop[Jet2_index] <145", "events after mass window")
 
 
 

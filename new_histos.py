@@ -20,15 +20,6 @@ ROOT.gInterpreter.ProcessLine(f'#include "{module_path_3}"')
 ROOT.gInterpreter.ProcessLine(f'#include "{module_path2}"')
 
 
-# #change the CMS_lumi variables (see CMS_lumi.py)
-# #CMS_lumi.lumi_7TeV = "4.8 fb^{-1}"
-# #CMS_lumi.lumi_8TeV = "18.3 fb^{-1}"
-# CMS_lumi.writeExtraText = 1
-# CMS_lumi.extraText = "Private Work"
-# CMS_lumi.lumi_sqrtS = "13 TeV" # used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
-
-
-
 
 
 #! PHASE2 DATASETS
@@ -74,9 +65,9 @@ files = {
     "signal_ph2": sig_path
     }
 
-processes = list(files.keys())
+#processes = list(files.keys())
 #processes = ['QCD6_flash','QCD7_flash','QCD8_flash','signal_flash']
-#processes = ['signal_full', 'signal_flash', 'signal_ph2']
+processes = ['signal_full', 'signal_flash', 'signal_ph2']
 for i in processes:
     if str(i) != 'signal_ph2' and str(i)!= 'QCD_ph2':
         f = os.listdir(files.get(i))
@@ -306,7 +297,7 @@ for i in processes:
 
     #TODO MASS REQUEST
 
-        df[i] = df[i].Filter("softdrop_after_cleaning[Jet1_index] >=50 && softdrop_after_cleaning[Jet2_index] >=50")
+        df[i] = df[i].Filter("softdrop_after_cleaning[Jet1_index] >=40 && softdrop_after_cleaning[Jet2_index] >=40")
 
 
         #! DISCRIMINATOR
@@ -326,8 +317,13 @@ for i in processes:
 
         dict_softdrop_hist2[i]['softdrop_request'] = df[i].Histo1D((str(i),str(i) + 'softdrop_request', 100, 0, 400), "Jet2_softdrop")
 
+        if str(i)== 'signal_flash':
 
+            preselection_signal_flash = df[i].Count().GetValue()
 
+            df[i] = df[i].Filter("discr_after_cleaning[Jet1_index]>0.95")
+
+            print("efficiency for flashsim @0.95 is:", df[i].Count().GetValue()/preselection_signal_flash)
 
 
 #* PHASE 2 DATASET
@@ -501,7 +497,7 @@ for i in processes:
 
     #TODO MASS REQUEST
 
-        df[i] = df[i].Filter("softdrop_after_eta_sel[Jet1_index] >=50 && softdrop_after_eta_sel[Jet2_index] >=50")
+        df[i] = df[i].Filter("softdrop_after_eta_sel[Jet1_index] >=40 && softdrop_after_eta_sel[Jet2_index] >=40")
 
 
         #! DISCRIMINATOR
@@ -737,7 +733,7 @@ for i in processes:
 
     #TODO MASS REQUEST
 
-        df[i] = df[i].Filter("softdrop_after_cleaning[Jet1_index] >=50 && softdrop_after_cleaning[Jet2_index] >=50")
+        df[i] = df[i].Filter("softdrop_after_cleaning[Jet1_index] >=40 && softdrop_after_cleaning[Jet2_index] >=40")
 
 
         #! DISCRIMINATOR
@@ -758,7 +754,13 @@ for i in processes:
         dict_softdrop_hist2[i]['softdrop_request'] = df[i].Histo1D((str(i),str(i) + 'softdrop_request', 100, 0, 400), "Jet2_softdrop")
 
 
+        if str(i)== 'signal_full':
 
+            preselection_signal_full = df[i].Count().GetValue()
+
+            df[i] = df[i].Filter("discr_after_cleaning[Jet1_index]>0.955")
+
+            print("efficiency for fullsim @0.955 is:", df[i].Count().GetValue()/preselection_signal_full)
 
 selection_steps_full = list(dict_discr_hist1['signal_full'].keys())
 
@@ -907,72 +909,73 @@ print("stacking the histograms")
 
 
 #TODO divide per fullsim, flashsim e ph2 separatamente, ogni taglio a parte
+print("GLI HISTOS VANNO RISCRITTI")
 
 print("creating the histograms")
 
-output_file = ROOT.TFile.Open("figures_analysis_complete/histograms_plus_softdrop_req.root", "RECREATE")
+# output_file = ROOT.TFile.Open("figures_analysis_complete/histograms_plus_softdrop_req.root", "RECREATE")
 
-for i in processes:
-    for j in selection_steps_full:
+# for i in processes:
+#     for j in selection_steps_full:
 
 
 
-        if str(i) == 'QCD1_full'  or str(i) == 'QCD2_full' or str(i) == 'QCD3_full' or str(i) == 'QCD4_full'  or str(i) == 'QCD5_full'  or str(i) == 'QCD6_full' or str(i) == 'QCD7_full' or str(i) == 'QCD8_full' or str(i) == 'signal_full':
+#         if str(i) == 'QCD1_full'  or str(i) == 'QCD2_full' or str(i) == 'QCD3_full' or str(i) == 'QCD4_full'  or str(i) == 'QCD5_full'  or str(i) == 'QCD6_full' or str(i) == 'QCD7_full' or str(i) == 'QCD8_full' or str(i) == 'signal_full':
             
-            dict_discr_hist_tot[i][j] = dict_discr_hist_tot[i][j].GetValue()
-            dict_discr_hist1[i][j] = dict_discr_hist1[i][j].GetValue()
-            dict_discr_hist2[i][j] = dict_discr_hist2[i][j].GetValue()
-            dict_softdrop_hist_tot[i][j] = dict_softdrop_hist_tot[i][j].GetValue()
-            dict_softdrop_hist1[i][j] = dict_softdrop_hist1[i][j].GetValue()
-            dict_softdrop_hist2[i][j] = dict_softdrop_hist2[i][j].GetValue()
+#             dict_discr_hist_tot[i][j] = dict_discr_hist_tot[i][j].GetValue()
+#             dict_discr_hist1[i][j] = dict_discr_hist1[i][j].GetValue()
+#             dict_discr_hist2[i][j] = dict_discr_hist2[i][j].GetValue()
+#             dict_softdrop_hist_tot[i][j] = dict_softdrop_hist_tot[i][j].GetValue()
+#             dict_softdrop_hist1[i][j] = dict_softdrop_hist1[i][j].GetValue()
+#             dict_softdrop_hist2[i][j] = dict_softdrop_hist2[i][j].GetValue()
             
             
-            output_file.WriteObject(dict_discr_hist_tot[i][j], "discr_histo_tot_" + str(i)+ "_" + str(j))
-            output_file.WriteObject(dict_discr_hist1[i][j], "discr_histo1_" + str(i)+ "_" + str(j))
-            output_file.WriteObject(dict_discr_hist2[i][j], "discr_histo2_" + str(i)+ "_" + str(j))
-            output_file.WriteObject(dict_softdrop_hist_tot[i][j], "soft_histo_tot_" + str(i)+ "_" + str(j))
-            output_file.WriteObject(dict_softdrop_hist1[i][j], "soft_histo1_" + str(i)+ "_" + str(j))
-            output_file.WriteObject(dict_softdrop_hist2[i][j], "soft_histo2_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_discr_hist_tot[i][j], "discr_histo_tot_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_discr_hist1[i][j], "discr_histo1_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_discr_hist2[i][j], "discr_histo2_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_softdrop_hist_tot[i][j], "soft_histo_tot_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_softdrop_hist1[i][j], "soft_histo1_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_softdrop_hist2[i][j], "soft_histo2_" + str(i)+ "_" + str(j))
 
 
-    for j in selection_steps_flash:
-        if str(i) == 'QCD6_flash' or str(i) == 'QCD7_flash' or  str(i) == 'QCD8_flash' or str(i) == 'signal_flash':
+#     for j in selection_steps_flash:
+#         if str(i) == 'QCD6_flash' or str(i) == 'QCD7_flash' or  str(i) == 'QCD8_flash' or str(i) == 'signal_flash':
         
-            dict_discr_hist_tot[i][j] = dict_discr_hist_tot[i][j].GetValue()
-            dict_discr_hist1[i][j] = dict_discr_hist1[i][j].GetValue()
-            dict_discr_hist2[i][j] = dict_discr_hist2[i][j].GetValue()
-            dict_softdrop_hist_tot[i][j] = dict_softdrop_hist_tot[i][j].GetValue()
-            dict_softdrop_hist1[i][j] = dict_softdrop_hist1[i][j].GetValue()
-            dict_softdrop_hist2[i][j] = dict_softdrop_hist2[i][j].GetValue()
+#             dict_discr_hist_tot[i][j] = dict_discr_hist_tot[i][j].GetValue()
+#             dict_discr_hist1[i][j] = dict_discr_hist1[i][j].GetValue()
+#             dict_discr_hist2[i][j] = dict_discr_hist2[i][j].GetValue()
+#             dict_softdrop_hist_tot[i][j] = dict_softdrop_hist_tot[i][j].GetValue()
+#             dict_softdrop_hist1[i][j] = dict_softdrop_hist1[i][j].GetValue()
+#             dict_softdrop_hist2[i][j] = dict_softdrop_hist2[i][j].GetValue()
 
 
-            output_file.WriteObject(dict_discr_hist_tot[i][j], "discr_histo_tot_" + str(i)+ "_" + str(j))
-            output_file.WriteObject(dict_discr_hist1[i][j], "discr_histo1_" + str(i)+ "_" + str(j))
-            output_file.WriteObject(dict_discr_hist2[i][j], "discr_histo2_" + str(i)+ "_" + str(j))
-            output_file.WriteObject(dict_softdrop_hist_tot[i][j], "soft_histo_tot_" + str(i)+ "_" + str(j))
-            output_file.WriteObject(dict_softdrop_hist1[i][j], "soft_histo1_" + str(i)+ "_" + str(j))
-            output_file.WriteObject(dict_softdrop_hist2[i][j], "soft_histo2_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_discr_hist_tot[i][j], "discr_histo_tot_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_discr_hist1[i][j], "discr_histo1_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_discr_hist2[i][j], "discr_histo2_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_softdrop_hist_tot[i][j], "soft_histo_tot_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_softdrop_hist1[i][j], "soft_histo1_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_softdrop_hist2[i][j], "soft_histo2_" + str(i)+ "_" + str(j))
             
-    for j in selection_steps_ph2:
-        if str(i) == 'QCD_ph2' or str(i) == 'signal_ph2':
+#     for j in selection_steps_ph2:
+#         if str(i) == 'QCD_ph2' or str(i) == 'signal_ph2':
 
-            dict_discr_hist_tot[i][j] = dict_discr_hist_tot[i][j].GetValue()
-            dict_discr_hist1[i][j] = dict_discr_hist1[i][j].GetValue()
-            dict_discr_hist2[i][j] = dict_discr_hist2[i][j].GetValue()
-            dict_softdrop_hist_tot[i][j] = dict_softdrop_hist_tot[i][j].GetValue()
-            dict_softdrop_hist1[i][j] = dict_softdrop_hist1[i][j].GetValue()
-            dict_softdrop_hist2[i][j] = dict_softdrop_hist2[i][j].GetValue()
+#             dict_discr_hist_tot[i][j] = dict_discr_hist_tot[i][j].GetValue()
+#             dict_discr_hist1[i][j] = dict_discr_hist1[i][j].GetValue()
+#             dict_discr_hist2[i][j] = dict_discr_hist2[i][j].GetValue()
+#             dict_softdrop_hist_tot[i][j] = dict_softdrop_hist_tot[i][j].GetValue()
+#             dict_softdrop_hist1[i][j] = dict_softdrop_hist1[i][j].GetValue()
+#             dict_softdrop_hist2[i][j] = dict_softdrop_hist2[i][j].GetValue()
 
-            output_file.WriteObject(dict_discr_hist_tot[i][j], "discr_histo_tot_" + str(i)+ "_" + str(j))
-            output_file.WriteObject(dict_discr_hist1[i][j], "discr_histo1_" + str(i)+ "_" + str(j))
-            output_file.WriteObject(dict_discr_hist2[i][j], "discr_histo2_" + str(i)+ "_" + str(j))
-            output_file.WriteObject(dict_softdrop_hist_tot[i][j], "soft_histo_tot_" + str(i)+ "_" + str(j))
-            output_file.WriteObject(dict_softdrop_hist1[i][j], "soft_histo1_" + str(i)+ "_" + str(j))
-            output_file.WriteObject(dict_softdrop_hist2[i][j], "soft_histo2_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_discr_hist_tot[i][j], "discr_histo_tot_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_discr_hist1[i][j], "discr_histo1_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_discr_hist2[i][j], "discr_histo2_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_softdrop_hist_tot[i][j], "soft_histo_tot_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_softdrop_hist1[i][j], "soft_histo1_" + str(i)+ "_" + str(j))
+#             output_file.WriteObject(dict_softdrop_hist2[i][j], "soft_histo2_" + str(i)+ "_" + str(j))
             
 
 
 
-# print("written on txt")
+# # print("written on txt")
 
 
