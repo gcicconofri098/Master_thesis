@@ -63,22 +63,24 @@ integrated_luminosity = 59830
 
 temp = 0
 files = {
-    "QCD1_full": "/scratchnvme/cicco/QCD1/",
-    "QCD2_full": "/scratchnvme/cicco/QCD2/",
-    "QCD3_full": "/scratchnvme/cicco/QCD3/",
-    "QCD4_full": "/scratchnvme/cicco/QCD4/",
-    "QCD5_full": "/scratchnvme/cicco/QCD5/",
-    "QCD6_full": "/scratchnvme/cicco/QCD6/",
-    "QCD7_full": "/scratchnvme/cicco/QCD7/",
-    "QCD8_full": "/scratchnvme/cicco/QCD8/",
+    # "QCD1_full": "/scratchnvme/cicco/QCD1/",
+    # "QCD2_full": "/scratchnvme/cicco/QCD2/",
+    # "QCD3_full": "/scratchnvme/cicco/QCD3/",
+    # "QCD4_full": "/scratchnvme/cicco/QCD4/",
+    # "QCD5_full": "/scratchnvme/cicco/QCD5/",
+    # "QCD6_full": "/scratchnvme/cicco/QCD6/",
+    # "QCD7_full": "/scratchnvme/cicco/QCD7/",
+    # "QCD8_full": "/scratchnvme/cicco/QCD8/",
 #    "old_signal_full": "/scratchnvme/cicco/signal/",
-    "signal_full": "/scratchnvme/cicco/signal_RunIISummer20UL16/",
-    "QCD6_flash": "/scratchnvme/cicco/QCD6_good_flash/",
-    "QCD7_flash": "/scratchnvme/cicco/QCD7_good_flash/",
-    "QCD8_flash": "/scratchnvme/cicco/QCD8_good_flash/",
+#    "signal_full": "/scratchnvme/cicco/signal_RunIISummer20UL16/",
+    # "QCD4_flash": "/scratchnvme/cicco/QCD4_good_flash/",
+    # "QCD5_flash": "/scratchnvme/cicco/QCD5_good_flash/",
+    # "QCD6_flash": "/scratchnvme/cicco/QCD6_good_flash/",
+    # "QCD7_flash": "/scratchnvme/cicco/QCD7_good_flash/",
+    # "QCD8_flash": "/scratchnvme/cicco/QCD8_good_flash/",
     "signal_flash": "/scratchnvme/cicco/signal_RunIISummer20UL16_flash/",
-    #"QCD_ph2": bckg_path,
-    #"signal_ph2": sig_path
+    # "QCD_ph2": bckg_path,
+    # "signal_ph2": sig_path
     }
 weights={
     "QCD1_full": 27990000 * integrated_luminosity,
@@ -90,6 +92,8 @@ weights={
     "QCD7_full": 119.9 * integrated_luminosity,
     "QCD8_full": 25.24 * integrated_luminosity,
     "signal_full": 0.01053 * integrated_luminosity,
+    "QCD4_flash": 32100 * integrated_luminosity,
+    "QCD5_flash": 6831 * integrated_luminosity,
     "QCD6_flash": 1207 * integrated_luminosity,
     "QCD7_flash": 119.9 * integrated_luminosity,
     "QCD8_flash": 25.24 * integrated_luminosity,
@@ -107,6 +111,8 @@ n_events = {
     "QCD7_full": 11887406,
     "QCD8_full": 5710430,
     "signal_full": 540000,
+    "QCD4_flash": 61097673,
+    "QCD5_flash": 47314826,
     "QCD6_flash": 15230975,
     "QCD7_flash": 11887406,
     "QCD8_flash": 5710430,
@@ -166,10 +172,11 @@ for i in processes:
 
         df[i] = df[i].Filter("!FullSim.FatJet_eta.empty()")
 
-        #print("check if empty",df[i].Count().GetValue())
         df[i] = (df[i]
         .Define("matching_index" , "lepton_matching_index(FatJet_eta, FatJet_phi, GenJetAK8_eta, GenJetAK8_phi)")
         .Define("Post_calibration_pt", "calibrate_pt_double_n_bins(FatJet_eta, FatJet_pt)")
+        .Define("Post_calibration_softdrop", "calibrate_pt_double_n_bins_softdrop(FatJet_eta, FatJet_pt, FatJet_msoftdrop)")
+
         .Define("HbbvsQCD_discriminator_lower_limited", "Where(FatJet_particleNetMD_XbbvsQCD>=0,  FatJet_particleNetMD_XbbvsQCD, 0)")
         .Define("HbbvsQCD_discriminator_limited", "Where(HbbvsQCD_discriminator_lower_limited<1, HbbvsQCD_discriminator_lower_limited, 0.9995) ")
         )
@@ -179,7 +186,7 @@ for i in processes:
         .Define("new_discriminator", "HbbvsQCD_discriminator_limited[Selection_pt]")
         .Define("FatJet_eta_sel", "FatJet_eta[Selection_pt]")
         .Define("FatJet_phi_sel", "FatJet_phi[Selection_pt]")
-        .Define("Softdrop_sel_jets", "FatJet_msoftdrop[Selection_pt]")
+        .Define("Softdrop_sel_jets", "Post_calibration_softdrop[Selection_pt]")
         .Define("Selected_pt", "Post_calibration_pt[Selection_pt]")
         )
 
@@ -190,6 +197,8 @@ for i in processes:
         df[i] = df[i].Define("Second_selection_eta", "FatJet_eta_sel[Second_selection]")
         df[i] = df[i].Define("Second_selection_discriminator", "new_discriminator[Second_selection]")
         df[i] = df[i].Define("Second_selection_mass", "Softdrop_sel_jets[Second_selection]")
+        df[i] = df[i].Define("Second_selection_pt", "Selected_pt[Second_selection]")
+        df[i] = df[i].Define("Second_selection_phi", "FatJet_phi_sel[Second_selection]")
 
         
         df[i] = df[i].Filter("Second_selection_mass.size()>=2", "events after request on fat eta")
@@ -208,19 +217,18 @@ for i in processes:
         )
 
         df[i] = (df[i]
-                .Define("jet1_discr", "new_discriminator[Jet1_index]")
+                .Define("jet1_discr", "Second_selection_discriminator[Jet1_index]")
                 .Define("jet1_softdrop", "Second_selection_mass[Jet1_index]")
-                .Define("jet2_discr", "new_discriminator[Jet2_index]")
+                .Define("jet2_discr", "Second_selection_discriminator[Jet2_index]")
                 .Define("jet2_softdrop", "Second_selection_mass[Jet2_index]")
 
         )
-        df[i] = df[i].Filter("jet1_softdrop>115 && jet1_softdrop<145 && jet2_softdrop >115 && jet2_softdrop <145", "events after mass window")
+        df[i] = df[i].Filter("jet1_softdrop>105 && jet1_softdrop<135 && jet2_softdrop >105 && jet2_softdrop <135", "events after mass window")
 
        
 
     else: #*fullsim
         print(f"number of events in dataset {i} is {df[i].Count().GetValue()}")
-
 
         df[i] = df[i].Filter("GenJetAK8_pt[0]>250 && GenJetAK8_pt[1]>250", "number of events after gen_pt")
 
@@ -232,6 +240,7 @@ for i in processes:
             .Define("Selected_pt", "FatJet_pt[Selection_pt]")
             .Define("Selected_mass", "FatJet_msoftdrop[Selection_pt]")
             .Define("Selected_eta", "FatJet_eta[Selection_pt]")
+            .Define("Selected_phi", "FatJet_phi[Selection_pt]")
             .Define("Discriminator_Xbb", "FatJet_particleNetMD_Xbb[Selection_pt]")
             .Define("Discriminator_Xcc", "FatJet_particleNetMD_Xcc[Selection_pt]")
             .Define("Discriminator_Xqq", "FatJet_particleNetMD_Xqq[Selection_pt]")
@@ -246,6 +255,8 @@ for i in processes:
             .Define("Second_selection_discriminator", "new_discriminator[Second_selection]")
             .Define("Second_selection_mass", "Selected_mass[Second_selection]")
             .Define("Second_selection_pt", "Selected_pt[Second_selection]")
+            .Define("Second_selection_phi", "Selected_phi[Second_selection]")
+            .Define("Second_selection_eta", "Selected_eta[Second_selection]")
         )
 
         df[i] = df[i].Filter("Second_selection_discriminator.size()>=2", "events after request on fat_eta")
@@ -272,7 +283,7 @@ for i in processes:
         .Define("jet2_softdrop", "Second_selection_mass[Jet2_index]")
         )
 
-        df[i] = df[i].Filter("jet1_softdrop>115 && jet1_softdrop<145 && jet2_softdrop >115 && jet2_softdrop <145", "events after mass window")
+        #df[i] = df[i].Filter("jet1_softdrop>115 && jet1_softdrop<145 && jet2_softdrop >115 && jet2_softdrop <145", "events after mass window")
 
 
 
@@ -331,7 +342,9 @@ for i in processes:
     #         .Define("leading_jet_discriminator_nb_1", "discriminator_nb_1[0]")
     #         .Define("leading_jet_discriminator_nb_2", "discriminator_nb_2[0]")      
     #     )
-        
+
+for i in processes:
+
     #if str(i) == 'signal_full' or str(i) == 'signal_flash':
 
     df[i].Report().Print()
@@ -339,23 +352,55 @@ for i in processes:
     remaining_events[i] = df[i].Count().GetValue()
 
     # if remaining_events[i]!=0:
-    #     df[i].Snapshot("Events", "comparison_roc_et_al/" + str(i) + "no_pt_window.root", {"leading_jet_discriminator_nb_0", 
-    #                                                                           "leading_jet_discriminator_nb_1", 
-    #                                                                           "leading_jet_discriminator_nb_2",
-    #                                                                           "discriminator_nb_0",
-    #                                                                           "discriminator_nb_1",
-    #                                                                           "discriminator_nb_2",
-    #                                                                           "Matching_nb_flavour", 
-    #                                                                           "Selected_pt",
-    #                                                                           "MET_pt",
-    #                                                                           "jet1_discr",
-    #                                                                           "jet2_discr", 
-    #                                                                           "new_discriminator", 
-    #                                                                           "jet1_softdrop",
-    #                                                                           "jet2_softdrop", 
-    #                                                                           "Softdrop_sel_jets", 
-    #                                                                           "FatJet_eta_sel", 
-    #                                                                           "FatJet_phi_sel",
-    #                                                                           "Matching_hadron_flavour",
-    #                                                                           "Matching_parton_flavour"})
+    #     if str(i) == 'QCD4_flash' or str(i) == 'QCD5_flash' or str(i) == 'QCD6_flash' or str(i) == 'QCD7_flash' or str(i) == 'QCD8_flash' or str(i) == 'signal_flash': 
+
+    #         df[i].Snapshot("Events", "snapshots_no_nb/" + str(i) + "_no_pt_window_calibrated_mass_no_nb.root", {
+    #                                 #"leading_jet_discriminator_nb_0", 
+    #                                 #"leading_jet_discriminator_nb_1", 
+    #                                 #"leading_jet_discriminator_nb_2",
+    #                                 #"discriminator_nb_0",
+    #                                 #"discriminator_nb_1",
+    #                                 #"discriminator_nb_2",
+    #                                 #"Matching_nb_flavour", 
+    #                                 "Second_selection_pt",
+    #                                 "MET_pt",
+    #                                 "jet1_discr",
+    #                                 "jet2_discr", 
+    #                                 "Second_selection_discriminator", 
+    #                                 "jet1_softdrop",
+    #                                 "jet2_softdrop", 
+    #                                 "Second_selection_mass", 
+    #                                 "Second_selection_eta", 
+    #                                 "Second_selection_phi",
+    #                                 #"Matching_hadron_flavour",
+    #                                 #"Matching_parton_flavour"
+    #                                 })
+            
+    #     else:
+
+    #         df[i].Snapshot("Events", "snapshots_no_nb/" + str(i) + "_no_pt_window_no_nb.root", {
+    #                                 #"leading_jet_discriminator_nb_0", 
+    #                                 #"leading_jet_discriminator_nb_1", 
+    #                                 #"leading_jet_discriminator_nb_2",
+    #                                 #"discriminator_nb_0",
+    #                                 #"discriminator_nb_1",
+    #                                 #"discriminator_nb_2",
+    #                                 #"Matching_nb_flavour", 
+    #                                 "Second_selection_pt",
+    #                                 "MET_pt",
+    #                                 "jet1_discr",
+    #                                 "jet2_discr", 
+    #                                 "Second_selection_discriminator", 
+    #                                 "jet1_softdrop",
+    #                                 "jet2_softdrop", 
+    #                                 "Second_selection_mass", 
+    #                                 "Second_selection_eta", 
+    #                                 "Second_selection_phi",
+    #                                 #"Matching_hadron_flavour",
+    #                                 #"Matching_parton_flavour"
+    #                                 })
+            
+        
+
     print(f"snapshotted dataset {i}")
+

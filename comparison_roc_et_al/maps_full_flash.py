@@ -107,8 +107,8 @@ for i in existing_processes:
     df[i] = df[i].Filter("MET_pt<100")
 
     df[i] = df[i].Filter("jet1_softdrop>50 && jet2_softdrop>50")
-    if str(i) == 'signal_full' or str(i) == 'signal_flash':
-        df[i] = df[i].Filter("jet1_softdrop >115 && jet1_softdrop <145").Filter("jet2_softdrop > 115 && jet2_softdrop <145")
+    # if str(i) == 'signal_full' or str(i) == 'signal_flash':
+    #     df[i] = df[i].Filter("jet1_softdrop >115 && jet1_softdrop <145").Filter("jet2_softdrop > 115 && jet2_softdrop <145")
 
     events_before_discr_preselection[i] = df[i].Count().GetValue()
     print("preselection events", events_before_discr_preselection[i])
@@ -272,40 +272,40 @@ print("entries flashsim QCD after preselection:", QCD_flash_discr_entries)
 
 #! QCD RESHAPE IS DONE HERE
 
-total_full = QCD_full_reshape.Integral(1, 18, 1, 18)
+# total_full = QCD_full_reshape.Integral(1, 18, 1, 18)
 
-mass_full = QCD_full_reshape.Integral(7,8,7,8)
+# mass_full = QCD_full_reshape.Integral(7,8,7,8)
 
-ratio_full = mass_full/total_full
-print("ratio fullsim", ratio_full)
+# ratio_full = mass_full/total_full
+# print("ratio fullsim", ratio_full)
 
-total_flash = QCD_flash_reshape.Integral(1, 18, 1, 18)
+# total_flash = QCD_flash_reshape.Integral(1, 18, 1, 18)
 
-mass_flash = QCD_flash_reshape.Integral(7,8,7,8)
+# mass_flash = QCD_flash_reshape.Integral(7,8,7,8)
 
-ratio_flash = mass_flash/total_flash
+# ratio_flash = mass_flash/total_flash
 
-print("ratio flashsim", ratio_flash)
-
-
-QCD_full_discr.Scale(ratio_full)
-QCD_full_softdrop.Scale(ratio_full)
-QCD_full_softdrop_jet1.Scale(ratio_full)
-QCD_full_softdrop_jet2.Scale(ratio_full)
-QCD_full_discr_jet1.Scale(ratio_full)
-QCD_full_discr_jet2.Scale(ratio_full)
-
-QCD_full_mass_vs_discr.Scale(ratio_full)
+# print("ratio flashsim", ratio_flash)
 
 
-QCD_flash_discr.Scale(ratio_flash)
-QCD_flash_softdrop.Scale(ratio_flash)
-QCD_flash_softdrop_jet1.Scale(ratio_flash)
-QCD_flash_softdrop_jet2.Scale(ratio_flash)
-QCD_flash_discr_jet1.Scale(ratio_flash)
-QCD_flash_discr_jet2.Scale(ratio_flash)
+# QCD_full_discr.Scale(ratio_full)
+# QCD_full_softdrop.Scale(ratio_full)
+# QCD_full_softdrop_jet1.Scale(ratio_full)
+# QCD_full_softdrop_jet2.Scale(ratio_full)
+# QCD_full_discr_jet1.Scale(ratio_full)
+# QCD_full_discr_jet2.Scale(ratio_full)
 
-QCD_flash_mass_vs_discr.Scale(ratio_flash)
+# QCD_full_mass_vs_discr.Scale(ratio_full)
+
+
+# QCD_flash_discr.Scale(ratio_flash)
+# QCD_flash_softdrop.Scale(ratio_flash)
+# QCD_flash_softdrop_jet1.Scale(ratio_flash)
+# QCD_flash_softdrop_jet2.Scale(ratio_flash)
+# QCD_flash_discr_jet1.Scale(ratio_flash)
+# QCD_flash_discr_jet2.Scale(ratio_flash)
+
+# QCD_flash_mass_vs_discr.Scale(ratio_flash)
 
 #! ~~~~~ RESHAPING DONE ~~~~~~
 
@@ -607,8 +607,8 @@ legend17.AddEntry(QCD_full_softdrop_jet2, "Run2 fullsim, background", "f")
 histos["signal_full"]['1d_softdrop_jet2'].Draw("SAME HIST")
 histos["signal_full"]['1d_softdrop_jet2'].SetLineWidth(3)
 histos["signal_full"]['1d_softdrop_jet2'].SetLineColor(ROOT.kRed +3)
-histos["signal_full"]['1d_softdrop_jet2'].Scale(2000)
-legend17.AddEntry(histos["signal_full"]['1d_softdrop_jet2'], "Run2 fullsim, signal x 2000", "l")
+histos["signal_full"]['1d_softdrop_jet2'].Scale(70000)
+legend17.AddEntry(histos["signal_full"]['1d_softdrop_jet2'], "Run2 fullsim, signal x 70000", "l")
 
 legend17.Draw()
 
@@ -632,8 +632,8 @@ histos["signal_flash"]['1d_softdrop_jet2'].SetLineWidth(3)
 #histos["signal_flash"]['1d_softdrop_jet2'].SetLineStyle(2)
 
 histos["signal_flash"]['1d_softdrop_jet2'].SetLineColor(ROOT.kBlack)
-histos["signal_flash"]['1d_softdrop_jet2'].Scale(4000)
-legend18.AddEntry(histos["signal_flash"]['1d_softdrop_jet2'], "Run2 flashsim, signal x 4000", "l")
+histos["signal_flash"]['1d_softdrop_jet2'].Scale(70000)
+legend18.AddEntry(histos["signal_flash"]['1d_softdrop_jet2'], "Run2 flashsim, signal x 70000", "l")
 
 legend18.Draw()
 
@@ -787,20 +787,20 @@ QCD_full_mass_vs_discr.SetTitle("Mass vs Discriminator distribution Run2 fullsim
 # c2.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/sig_distr_flash_softdrop_window_plus_QCD_reshape_MET.pdf")
 # c3.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/efficiency_map_full_softdrop_window_plus_QCD_reshape_MET.pdf")
 # c4.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/efficiency_map_flash_softdrop_window_plus_QCD_reshape_MET.pdf")
-c5.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/maps_QCD_full_6_7_8/integrated_s_b_full_softdrop_window_plus_QCD_reshape_MET.pdf")
+#c5.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/integrated_s_b_full_softdrop_window_plus_QCD_reshape_MET.pdf")
 # c6.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/integrated_s_b_flash_softdrop_window_plus_QCD_reshape_MET.pdf")
-c7.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/maps_QCD_full_6_7_8/differential_s_b_full_softdrop_window_plus_QCD_reshape_MET.pdf")
+#c7.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/differential_s_b_full_softdrop_window_plus_QCD_reshape_MET.pdf")
 # c8.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/differential_s_b_flash_softdrop_window_plus_QCD_reshape_MET.pdf")
-c9.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/maps_QCD_full_6_7_8/integrated_s_sqrt_b_full_softdrop_window_plus_QCD_reshape_MET.pdf")
+#c9.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/integrated_s_sqrt_b_full_softdrop_window_plus_QCD_reshape_MET.pdf")
 # c10.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/integrated_s_sqrt_b_flash_softdrop_window_plus_QCD_reshape_MET.pdf")
-c11.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/maps_QCD_full_6_7_8/differential_s_sqrt_b_full_softdrop_window_plus_QCD_reshape_MET.pdf")
+#c11.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/differential_s_sqrt_b_full_softdrop_window_plus_QCD_reshape_MET.pdf")
 # c12.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/differential_s_sqrt_b_flash_softdrop_window_plus_QCD_reshape_MET.pdf")
-c13.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/maps_QCD_full_6_7_8/bckg_distr_full_softdrop_window_plus_QCD_reshape_MET.pdf")
+#c13.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/bckg_distr_full_softdrop_window_plus_QCD_reshape_MET.pdf")
 # c14.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/bckg_distr_flash_softdrop_window_plus_QCD_reshape_MET.pdf")
-c15.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/maps_QCD_full_6_7_8/softdrop_jet1_full_softdrop_window_plus_QCD_reshape_MET_no_discr_cut.pdf")
-#c16.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/softdrop_jet1_flash_softdrop_window_plus_QCD_reshape_MET_no_discr_cut.pdf")
-c17.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/maps_QCD_full_6_7_8/softdrop_jet2_full_softdrop_window_plus_QCD_reshape_MET.pdf")
-# c18.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/softdrop_jet2_flash_softdrop_window_plus_QCD_reshape_MET.pdf")
+c15.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/softdrop_jet1_full_QCD_6_7_8_NO_softdrop_window_MET_no_discr_cut.pdf")
+c16.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/softdrop_jet1_flash_QCD_6_7_8_NO_softdrop_window_MET_no_discr_cut.pdf")
+c17.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/softdrop_jet2_full_QCD_6_7_8_NO_softdrop_window_MET_no_discr_cut.pdf")
+c18.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/softdrop_jet2_flash_QCD_6_7_8_NO_softdrop_window_MET_no_discr_cut.pdf")
 # c19.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/distr_discr_divided_softdrop_window_plus_QCD_reshape_MET.pdf")
 # c20.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/discr_jet1_softdrop_window_plus_QCD_reshape_MET.pdf")
 # c21.SaveAs("/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/comparison_roc_et_al/discr_jet2_softdrop_window_plus_QCD_reshape_MET.pdf")

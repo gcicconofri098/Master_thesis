@@ -98,7 +98,7 @@ for i in processes:
     if str(i)!= 'ph_2':
         df[i] = (df[i]
         .Define("matching_index" , "lepton_matching_index(FatJet_eta, FatJet_phi, GenJetAK8_eta, GenJetAK8_phi)")
-        .Define("Post_calibration_pt", "calibrate_pt_double_n_bins(FatJet_eta, FatJet_pt)")
+        #.Define("Post_calibration_pt", "calibrate_pt_double_n_bins(FatJet_eta, FatJet_pt)")
         .Define("Matched_gen_pt", "Take(GenJetAK8_pt, matching_index)")
         .Define("Ratio_RecoGen", "FatJet_pt/Matched_gen_pt")
         .Define("Abs_eta", "abs(FatJet_eta)")
@@ -159,7 +159,7 @@ print("About to create the 3D histogram")
 for i in processes:
 
     histos[i] = df[i].Histo3D(
-    ("flash", "flashsim sample", 24, new_pt_bins, 10, new_eta_bins, 20, ratio_bins), "Matched_gen_pt", "Abs_eta", "Ratio_RecoGen"
+    ("flash", "flashsim sample", 24, new_pt_bins, 10, new_eta_bins, 20, ratio_bins), "FatJet_pt", "Abs_eta", "Ratio_RecoGen"
 ).GetValue()
 
     if str(i) != 'ph_2':
@@ -183,17 +183,17 @@ QCD_stacked.Draw("LEGO2")
 print("about to create the 2D histogram")
 
 histo2d = df['QCD4'].Histo2D(
-    ("flash", "flashsim sample", 24, new_pt_bins, 10, new_eta_bins), "Matched_gen_pt", "Abs_eta"
+    ("flash", "flashsim sample", 24, new_pt_bins, 10, new_eta_bins), "FatJet_pt", "Abs_eta"
 )
 histo2d.Reset()
 
 hist_test = df['QCD4'].Histo2D(
-    ("flash", "flashsim sample", 24, 0, 1 , 10, 0, 1), "Matched_gen_pt", "Abs_eta"
+    ("flash", "flashsim sample", 24, 0, 1 , 10, 0, 1), "FatJet_pt", "Abs_eta"
 )
 hist_test.Reset()
 
 hist_values = df['QCD4'].Histo2D(
-    ("flash", "flashsim sample", 24, 0, 1 , 10, 0, 1), "Matched_gen_pt", "Abs_eta"
+    ("flash", "flashsim sample", 24, 0, 1 , 10, 0, 1), "FatJet_pt", "Abs_eta"
 )
 hist_values.Reset()
 
@@ -330,7 +330,7 @@ c2.SetLogy()
 # c6.SetLogy(1)
 
 c1.SaveAs(
-    "/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/calibration/2x_bins_3d_ratio_for_calibration_post_calib_flash_all_QCD_GEN_on_axis.pdf"
+    "/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/calibration/calibration_using_flash_2x_bins_3d_ratio_for_calibration_all_QCD_GEN_on_axis.pdf"
 )
 
 # c2.SaveAs(
@@ -338,12 +338,12 @@ c1.SaveAs(
 # )
 
 c3.SaveAs(
-    "/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/calibration/2x_bins_response_flash_all_QCD_GEN_on_axis.pdf"
+    "/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/calibration/calibration_using_flash_2x_bins_response_for_calibration_all_QCD_GEN_on_axis.pdf"
 )
 
-# c4.SaveAs(
-#     "/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/calibration/2x_bins_values_for_calibration_regular_binning_post_calib_flash_all_QCD_GEN_on_axis.pdf"
-# )
+c4.SaveAs(
+    "/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/calibration/calibration_using_flash_2x_bins_values_for_calibration_regular_binning_for_calibration_all_QCD_GEN_on_axis.pdf"
+)
 
 # c5.SaveAs(
 #      "/gpfs/ddn/cms/user/cicco/miniconda3/Master_thesis/calibration/gen_pt_comparison.pdf"
