@@ -73,12 +73,12 @@ files = {
     # "QCD8_full": "/scratchnvme/cicco/QCD8/",
 #    "old_signal_full": "/scratchnvme/cicco/signal/",
 #    "signal_full": "/scratchnvme/cicco/signal_RunIISummer20UL16/",
-    # "QCD4_flash": "/scratchnvme/cicco/QCD4_good_flash/",
-    # "QCD5_flash": "/scratchnvme/cicco/QCD5_good_flash/",
-    # "QCD6_flash": "/scratchnvme/cicco/QCD6_good_flash/",
-    # "QCD7_flash": "/scratchnvme/cicco/QCD7_good_flash/",
-    # "QCD8_flash": "/scratchnvme/cicco/QCD8_good_flash/",
-    "signal_flash": "/scratchnvme/cicco/signal_RunIISummer20UL16_flash/",
+    "QCD4_flash": "/scratchnvme/cicco/QCD4_flash_new_training_v2/",
+    "QCD5_flash": "/scratchnvme/cicco/QCD5_flash_new_training_v2/",
+    "QCD6_flash": "/scratchnvme/cicco/QCD6_flash_new_training_v2/",
+    "QCD7_flash": "/scratchnvme/cicco/QCD7_flash_new_training_v2/",
+    "QCD8_flash": "/scratchnvme/cicco/QCD8_flash_new_training_v2/",
+    #"signal_flash": "/scratchnvme/cicco/signal_RunIISummer20UL16_flash/",
     # "QCD_ph2": bckg_path,
     # "signal_ph2": sig_path
     }
@@ -121,9 +121,10 @@ n_events = {
 
 
 
-processes = list(files.keys())
-#processes = ['QCD6_flash','QCD7_flash','QCD8_flash','signal_flash']
-#processes = ['signal_full', 'signal_flash']# 'signal_ph2']
+#processes = list(files.keys())
+#processes=['QCD4_flash','QCD5_flash', 'QCD6_flash', 'QCD7_flash', 'QCD8_flash']
+#processes = ['QCD4_flash', 'QCD5_flash', 'QCD6_flash','QCD7_flash','QCD8_flash']#,'signal_flash']
+processes = ['signal_full', 'signal_flash']# 'signal_ph2']
 for i in processes:
     if str(i) != 'signal_ph2' and str(i)!= 'QCD_ph2':
         f = os.listdir(files.get(i))
@@ -223,7 +224,7 @@ for i in processes:
                 .Define("jet2_softdrop", "Second_selection_mass[Jet2_index]")
 
         )
-        df[i] = df[i].Filter("jet1_softdrop>105 && jet1_softdrop<135 && jet2_softdrop >105 && jet2_softdrop <135", "events after mass window")
+        #df[i] = df[i].Filter("jet1_softdrop>105 && jet1_softdrop<135 && jet2_softdrop >105 && jet2_softdrop <135", "events after mass window")
 
        
 
@@ -351,30 +352,30 @@ for i in processes:
 
     remaining_events[i] = df[i].Count().GetValue()
 
-    # if remaining_events[i]!=0:
-    #     if str(i) == 'QCD4_flash' or str(i) == 'QCD5_flash' or str(i) == 'QCD6_flash' or str(i) == 'QCD7_flash' or str(i) == 'QCD8_flash' or str(i) == 'signal_flash': 
+    if remaining_events[i]!=0:
+        if str(i) == 'QCD4_flash' or str(i) == 'QCD5_flash' or str(i) == 'QCD6_flash' or str(i) == 'QCD7_flash' or str(i) == 'QCD8_flash' or str(i) == 'signal_flash': 
 
-    #         df[i].Snapshot("Events", "snapshots_no_nb/" + str(i) + "_no_pt_window_calibrated_mass_no_nb.root", {
-    #                                 #"leading_jet_discriminator_nb_0", 
-    #                                 #"leading_jet_discriminator_nb_1", 
-    #                                 #"leading_jet_discriminator_nb_2",
-    #                                 #"discriminator_nb_0",
-    #                                 #"discriminator_nb_1",
-    #                                 #"discriminator_nb_2",
-    #                                 #"Matching_nb_flavour", 
-    #                                 "Second_selection_pt",
-    #                                 "MET_pt",
-    #                                 "jet1_discr",
-    #                                 "jet2_discr", 
-    #                                 "Second_selection_discriminator", 
-    #                                 "jet1_softdrop",
-    #                                 "jet2_softdrop", 
-    #                                 "Second_selection_mass", 
-    #                                 "Second_selection_eta", 
-    #                                 "Second_selection_phi",
-    #                                 #"Matching_hadron_flavour",
-    #                                 #"Matching_parton_flavour"
-    #                                 })
+            df[i].Snapshot("Events", "snapshots_no_nb/root_files_new_training_flashsim_v2/" + str(i) + "_no_pt_window_calibrated_mass_no_nb.root", {
+                                    #"leading_jet_discriminator_nb_0", 
+                                    #"leading_jet_discriminator_nb_1", 
+                                    #"leading_jet_discriminator_nb_2",
+                                    #"discriminator_nb_0",
+                                    #"discriminator_nb_1",
+                                    #"discriminator_nb_2",
+                                    #"Matching_nb_flavour", 
+                                    "Second_selection_pt",
+                                    "MET_pt",
+                                    "jet1_discr",
+                                    "jet2_discr", 
+                                    "Second_selection_discriminator", 
+                                    "jet1_softdrop",
+                                    "jet2_softdrop", 
+                                    "Second_selection_mass", 
+                                    "Second_selection_eta", 
+                                    "Second_selection_phi",
+                                    #"Matching_hadron_flavour",
+                                    #"Matching_parton_flavour"
+                                    })
             
     #     else:
 

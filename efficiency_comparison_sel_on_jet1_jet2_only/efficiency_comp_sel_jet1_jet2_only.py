@@ -73,6 +73,8 @@ files = {
     "QCD8_full": "/scratchnvme/cicco/QCD8/",
 #    "old_signal_full": "/scratchnvme/cicco/signal/",
     "signal_full": "/scratchnvme/cicco/signal_RunIISummer20UL16/",
+    "QCD4_flash": "/scratchnvme/cicco/QCD4_good_flash/",
+    "QCD5_flash": "/scratchnvme/cicco/QCD5_good_flash/",
     "QCD6_flash": "/scratchnvme/cicco/QCD6_good_flash/",
     "QCD7_flash": "/scratchnvme/cicco/QCD7_good_flash/",
     "QCD8_flash": "/scratchnvme/cicco/QCD8_good_flash/",

@@ -86,8 +86,6 @@ stats3.SetX1NDC(0.73)
 c1.GetPad(0).Update()
 
 
-
-
 histos['signal_ph2']['jet1_softdrop_mass'].Draw("HIST")
 histos['signal_ph2']['jet1_softdrop_mass'].SetTitle("Softdrop mass for Jet1, no mass window, no discriminator cut, no pt window; Softdrop mass (Not calibrated); Events")
 histos['signal_ph2']['jet1_softdrop_mass'].SetLineWidth(2)

@@ -1,0 +1,10 @@
+root://xrootd-cms.infn.it///store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/FEVT/PU200_castor_111X_mcRun4_realistic_T15_v1-v1/100000/005010D5-6DF5-5E4A-89A3-30FEE02E40F8.root
+root://xrootd-cms.infn.it///store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/FEVT/PU200_castor_111X_mcRun4_realistic_T15_v1-v1/100000/01600A63-E0AA-704F-9E49-174804788ED3.root
+root://xrootd-cms.infn.it///store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/FEVT/PU200_castor_111X_mcRun4_realistic_T15_v1-v1/100000/01B94DC1-8A43-024A-AEE0-752E42C74E76.root
+root://xrootd-cms.infn.it///store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/FEVT/PU200_castor_111X_mcRun4_realistic_T15_v1-v1/100000/020ABB46-4350-364E-8BFB-6A4A5B626878.root
+root://xrootd-cms.infn.it///store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/FEVT/PU200_castor_111X_mcRun4_realistic_T15_v1-v1/100000/02E96482-D26F-2D4A-B43C-98D383CA7CB0.root
+root://xrootd-cms.infn.it///store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/FEVT/PU200_castor_111X_mcRun4_realistic_T15_v1-v1/100000/0345964B-144E-0D4D-9FFB-C23D024278D4.root
+root://xrootd-cms.infn.it///store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/FEVT/PU200_castor_111X_mcRun4_realistic_T15_v1-v1/100000/0392CF38-CCF1-C44C-A7B8-8EBBC6849533.root
+root://xrootd-cms.infn.it///store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/FEVT/PU200_castor_111X_mcRun4_realistic_T15_v1-v1/100000/03CA1094-C766-F14F-A7D3-3A6B84384DF1.root
+root://xrootd-cms.infn.it///store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/FEVT/PU200_castor_111X_mcRun4_realistic_T15_v1-v1/100000/03F0A9C6-D5C4-5348-AA07-1300B76AD657.root
+root://xrootd-cms.infn.it///store/mc/Phase2HLTTDRSummer20ReRECOMiniAOD/QCD_Pt-15to3000_TuneCP5_Flat_14TeV-pythia8/FEVT/PU200_castor_111X_mcRun4_realistic_T15_v1-v1/100000/03F917B4-F79A-3847-AD4C-F11303342289.root
